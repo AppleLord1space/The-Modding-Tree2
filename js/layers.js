@@ -51,7 +51,7 @@ addLayer("le", {
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
     resource: "lemons", // Name of prestige currency
     baseResource: "fruit crystals", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
+    baseAmount() {return player.c.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
@@ -65,7 +65,28 @@ addLayer("le", {
     hotkeys: [
         {key: "l", description: "l: Reset for lemons", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return true},
+    upgrades: {
+        11: {
+            title: "More points now!",
+   		 description: "Increase point gain by lemons^0.5",
+   		 cost: new Decimal(1),
+            effect() {
+                return player.le.points.pow(0.5)
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
+        }
+    },
+    challenges: {
+        11: {
+            name: "Gauntlet of lemongrab from adventure time",
+            challengeDescription: "UNACCEPTABLEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+            canComplete: function() {return player.points.gte(100)},
+            goalDescription:"Get one hundred apples",
+            rewardDescription:"point gain is multiplied by 10^completions"
+
+        }
+    }
     
     
 
