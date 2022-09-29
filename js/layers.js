@@ -80,7 +80,7 @@ addLayer("le", {
     challenges: {
         11: {
             name: "Gauntlet of lemongrab from adventure time",
-            challengeDescription: "UNACCEPTABLEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+            challengeDescription: "Square root point gain.",
             canComplete: function() {return player.points.gte(100)},
             goalDescription:"Get one hundred apples",
             rewardDescription:"point gain is multiplied by 10^completions"

@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0",
+	num: "1.1",
 	name: "epic",
 }
 
@@ -45,6 +45,7 @@ function getPointGen() {
 	let gain = new Decimal(1)
 	if (hasUpgrade('p', 11)) gain = gain.times(upgradeEffect('p', 11))
 	if (hasUpgrade('le', 11)) gain = gain.times(upgradeEffect('le', 11))
+	if (inChallenge('le', 11)) gain = Math.sqrt(gain)
 	return gain
 }
 
