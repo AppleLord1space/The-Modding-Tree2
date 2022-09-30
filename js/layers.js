@@ -36,7 +36,7 @@ addLayer("c", {
    		 description: "make you better",
    		 cost: new Decimal(1),
             effect() {
-                return player[this.layer].points.add(1).pow(0.5)
+                return player[this.layer].points.add(1).pow(0.1)
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
         },
@@ -93,6 +93,7 @@ addLayer("le", {
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
+        if (inChallenge('o', 11)) exp = exp.pow(exp,0.1)
         return exp
     },
     row: 1, // Row the layer is in on the tree (0 is the first row)
@@ -114,7 +115,7 @@ addLayer("le", {
     challenges: {
         11: {
             name: "Gauntlet of lemongrab",
-            challengeDescription: "apple gain * 0.1",
+            challengeDescription: "apple gain ^ 0.2",
             canComplete: function() {return player.points.gte(100^challengeCompletions('le', 11))},
             goalDescription:"Aquire 100 apples.",
             rewardDescription:"apple gain is multiplied by 10",
@@ -147,6 +148,7 @@ addLayer("li", {
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
+        if (inChallenge('o', 11)) exp = exp.pow(exp,0.1)
         return exp
     },
     row: 1, // Row the layer is in on the tree (0 is the first row)
@@ -224,7 +226,7 @@ addLayer("o", {
     challenges: {
         11: {
             name: "The trial",
-            challengeDescription: "apple gain square rooted, lemons square rooted, limes square rooted, orange upgrades nerfed.",
+            challengeDescription: "apple gain to the second root, lemons ^ 0.1, limes ^ 0.1.",
             canComplete: function() {return player.points.gte(10000)},
             goalDescription:"Aquire 10000 apples.",
             rewardDescription:"Major buffs to most things",
