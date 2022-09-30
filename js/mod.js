@@ -13,14 +13,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.1",
+	num: "1.2",
 	name: "epic",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+		- Just a backup incase things go wrong.`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -46,8 +45,11 @@ function getPointGen() {
 	let gain = new Decimal(1)
 	if (hasUpgrade('c', 11)) gain = gain.times(upgradeEffect('c', 11))
 	if (hasUpgrade('le', 11)) gain = gain.times(upgradeEffect('le', 11))
-	if (inChallenge('le', 11)) gain = gain.pow(0.2)
+	if (hasUpgrade('li', 11)) gain = gain.times(0.9)
+	if (inChallenge('le', 11)) gain = Math.pow(gain,0.2)
 	if (hasChallenge('le', 11)) gain = gain.times(10^challengeCompletions('le', 11))
+
+	//Other things
 	
 	return gain
 }

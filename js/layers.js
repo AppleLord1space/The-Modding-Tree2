@@ -19,7 +19,9 @@ addLayer("c", {
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
-        return new Decimal(1)
+        exp = new Decimal(1)
+        if (hasMilestone('c', 0)) exp.add(0.2)
+        return exp
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
@@ -60,11 +62,10 @@ addLayer("c", {
     milestones: {
         0: {
             requirementDescription: "10k apples",
-            effectDescription: "gain 5% of fruit crystal gain per second",
-            done() { return player.c.points.gte(10000) }
+            effectDescription: "fruit crystal gain ^1.2",
+            done() { return player.points.gte(10000) }
         }
     },
-
 })
 addLayer("le", {
 
@@ -156,7 +157,7 @@ addLayer("li", {
    		 description: "Increase lemon gain using limes but have 10% less point gain",
    		 cost: new Decimal(3),
             effect() {
-                return 0.9
+                return Math.log(player.li.points.add(1))
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
         }
