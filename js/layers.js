@@ -36,8 +36,8 @@ addLayer("c", {
    		 description: "make you better",
    		 cost: new Decimal(1),
             effect() {
-                return player[this.layer].points.add(1).pow(0.1)
-            },
+                return Math.pow(player.c.points,0.2)
+            }, 
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
         },
         12: {
@@ -51,21 +51,13 @@ addLayer("c", {
         }
     },
     achievements: {
-        11: {
-            name: "Money",
-            done() {
-                return (player.points > 10000)
-            },
-            onComplete() {
-            
-            }
-        },
+
     },
     milestones: {
         0: {
-            requirementDescription: "10k apples",
+            requirementDescription: "10k Fruit crystals",
             effectDescription: "fruit crystal gain ^1.2",
-            done() { return player.points.gte(10000) }
+            done() { return player.c.points.gte(10000) }
         }
     },
 })
@@ -87,7 +79,8 @@ addLayer("le", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-        if (hasUpgrade('li', 11)) mult = mult.add(Math.log(player.li.points.add(1)))
+        if (hasUpgrade('li', 11)) mult = mult.times(Math.log(player.li.points.add(1)))
+        if (hasUpgrade('c', 12)) mult = mult.times(upgradeEffect('c', 12))
         mult = mult.add(upgradeEffect('o', 12))
         return mult
     },
@@ -119,7 +112,7 @@ addLayer("le", {
             canComplete: function() {return player.points.gte(100^challengeCompletions('le', 11))},
             goalDescription:"Aquire 100 apples.",
             rewardDescription:"apple gain is multiplied by 10",
-            rewardEffect() {return 100}
+            rewardEffect() {return 10}
 
         }
     }

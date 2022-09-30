@@ -45,9 +45,9 @@ function getPointGen() {
 	let gain = new Decimal(1)
 	if (hasUpgrade('c', 11)) gain = gain.times(upgradeEffect('c', 11))
 	if (hasUpgrade('le', 11)) gain = gain.times(upgradeEffect('le', 11))
-	if (hasUpgrade('li', 11)) gain = gain.pow(gain,0.2)
-	if (inChallenge('le', 11)) gain = gain.times(0.1)
-	if (hasChallenge('le', 11)) gain = gain.times(10^challengeCompletions('le', 11))
+	if (hasUpgrade('li', 11)) gain = gain.times(0.9)
+	if (inChallenge('le', 11)) gain = gain.add(0 - gain).add(Math.pow(gain,0.2))
+	if (hasChallenge('le', 11)) gain = gain.times(10)
 	if (inChallenge('o', 11)) gain = gain.sqrt(gain).sqrt(gain)
 	//Other things
 	
