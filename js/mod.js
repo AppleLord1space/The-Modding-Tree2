@@ -43,12 +43,13 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
-	if (hasUpgrade('p', 11)) gain = gain.times(upgradeEffect('p', 11))
+	if (hasUpgrade('c', 11)) gain = gain.times(upgradeEffect('c', 11))
 	if (hasUpgrade('le', 11)) gain = gain.times(upgradeEffect('le', 11))
-	if (inChallenge('le', 11)) gain = Math.sqrt(gain)
+	if (inChallenge('le', 11)) gain = gain.pow(0.2)
+	if (hasChallenge('le', 11)) gain = gain.times(10^challengeCompletions('le', 11))
+	
 	return gain
 }
-
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
 }}
@@ -80,3 +81,4 @@ function maxTickLength() {
 // you can cap their current resources with this.
 function fixOldSave(oldVersion){
 }
+
