@@ -16,6 +16,8 @@ addLayer("c", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+        mult = mult.add(upgradeEffect('o', 11))
+        mult = mult.add(upgradeEffect('o', 12))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -86,6 +88,7 @@ addLayer("le", {
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         if (hasUpgrade('li', 11)) mult = mult.add(Math.log(player.li.points.add(1)))
+        mult = mult.add(upgradeEffect('o', 12))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -111,7 +114,7 @@ addLayer("le", {
     challenges: {
         11: {
             name: "Gauntlet of lemongrab",
-            challengeDescription: "apple gain ^ 0.2",
+            challengeDescription: "apple gain * 0.1",
             canComplete: function() {return player.points.gte(100^challengeCompletions('le', 11))},
             goalDescription:"Aquire 100 apples.",
             rewardDescription:"apple gain is multiplied by 10",
@@ -164,6 +167,70 @@ addLayer("li", {
     },
     challenges: {
 
+    }
+    
+    
+
+})
+addLayer("o", {
+    branches: ["le","li","c"],
+    name: "orange", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "O", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#FF8300",
+    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    resource: "oranges", // Name of prestige currency
+    baseResource: "lemons", // Name of resource prestige is based on
+    baseAmount() {return player.le.points}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        return exp
+    },
+    row: 2, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "o", description: "o: Reset for oranges", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return true},
+    upgrades: {
+        11: {
+            title: "the fusion",
+   		 description: "Increase fruit crystal gain using lemons",
+   		 cost: new Decimal(1),
+            effect() {
+                return Math.pow(Math.log(player.le.points + 1) + 1,2)
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
+        },
+        12: {
+            title: "warm mix",
+   		 description: "Increase all warm colored layers by 10x",
+   		 cost: new Decimal(3),
+            effect() {
+                return 10
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
+        }
+    },
+    challenges: {
+        11: {
+            name: "The trial",
+            challengeDescription: "apple gain square rooted, lemons square rooted, limes square rooted, orange upgrades nerfed.",
+            canComplete: function() {return player.points.gte(10000)},
+            goalDescription:"Aquire 10000 apples.",
+            rewardDescription:"Major buffs to most things",
+            rewardEffect() {return 100}
+
+        }
     }
     
     
