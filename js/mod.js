@@ -39,6 +39,7 @@ function canGenPoints(){
 
 // Calculate points/sec!
 function getPointGen() {
+	player.navTab = 'tree-tab'
 	if(!canGenPoints())
 		return new Decimal(0)
 
