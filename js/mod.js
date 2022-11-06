@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The Fruit Tree",
 	id: "mymod",
 	author: "AppleLord",
-	pointsName: "Apples",
+	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.2",
+	num: "1.0",
 	name: "epic",
 }
 
@@ -43,14 +43,6 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
-	if (hasUpgrade('c', 11)) gain = gain.times(upgradeEffect('c', 11))
-	if (hasUpgrade('le', 11)) gain = gain.times(upgradeEffect('le', 11))
-	if (hasUpgrade('li', 11)) gain = gain.times(0.9)
-	if (inChallenge('le', 11)) gain = gain.add(0 - gain).add(Math.pow(gain,0.2))
-	if (hasChallenge('le', 11)) gain = gain.times(10)
-	if (inChallenge('o', 11)) gain = gain.sqrt(gain).sqrt(gain)
-	//Other things
-	
 	return gain
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
