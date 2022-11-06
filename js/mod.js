@@ -1,5 +1,5 @@
 let modInfo = {
-	name: "The Fruit Tree",
+	name: "The Dot Tree",
 	id: "mymod",
 	author: "AppleLord",
 	pointsName: "points",
@@ -41,8 +41,8 @@ function getPointGen() {
 	player.navTab = 'tree-tab'
 	if(!canGenPoints())
 		return new Decimal(0)
-
 	let gain = new Decimal(1)
+	if (hasUpgrade("d", 11)) gain = gain.times(upgradeEffect("d", 11))
 	return gain
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values

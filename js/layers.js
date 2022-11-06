@@ -1,15 +1,15 @@
-addLayer("r", {
+addLayer("d", {
     branches: [""],
-    name: "red", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "R", // This appears on the layer's node. Default is the id with the first letter capitalized
+    name: "dots", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "D", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
     }},
-    color: "#FF6747",
+    color: "#FFFFFF",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
-    resource: "red", // Name of prestige currency
+    resource: "dots", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
@@ -24,15 +24,27 @@ addLayer("r", {
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "r", description: "R: Reset for red", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "d", description: "D: Reset for dots", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true},
     upgrades: {
         11: {
-            description: "Point gain increased based on red.",
-            cost: new Decimal(3),
-            effect(){return Math.log10(player.r.points + 1)+1},
+            description: "Point gain increased based on dots.",
+            title: "1 dimensional recursion",
+            cost: new Decimal(1),
+            effect(){
+                get = Math.log10(player.d.points + 1)+1
+                if (hasUpgrade("d", 12)) get = Math.pow(get,upgradeEffect("d", 12))
+                return get
+            },
             effectDisplay() { return format(this.effect())+"x" }
         },
-    }
+        12: {
+            description: "The previous upgrade's effect is boosted based on points.",
+            title: "Dual core",
+            cost: new Decimal(4),
+            effect(){return Math.log10(player.points + 1)/2+1},
+            effectDisplay() { return "^" + format(this.effect()) }
+        },
+    },
 })
