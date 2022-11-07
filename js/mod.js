@@ -43,6 +43,7 @@ function getPointGen() {
 		return new Decimal(0)
 	let gain = new Decimal(1)
 	if (hasUpgrade("d", 11)) gain = gain.times(upgradeEffect("d", 11))
+	if (hasUpgrade("d", 13)) get = Math.pow(get,upgradeEffect("d", 13))
 	return gain
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
