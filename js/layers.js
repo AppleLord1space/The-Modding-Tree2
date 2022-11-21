@@ -19,6 +19,7 @@ addLayer("d", {
         mult = mult.times( Math.pow(2,player.l.points))
         if (hasUpgrade("l", 11)) mult = mult.times( Math.pow(2,player.l.points))
         if (hasUpgrade("l", 12)) mult = mult.times( upgradeEffect("l", 12) )
+        if (hasUpgrade("l", 13)) mult = mult.times( upgradeEffect("l", 13) )
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -56,7 +57,7 @@ addLayer("d", {
             cost: new Decimal(6),
             effect(){
                 get = Math.pow(Math.log10(player.points + 1)/2+1,0.75)
-                if (hasUpgrade("d", 15)) get = Math.pow(Math.pow(get,get),get)
+                if (hasUpgrade("d", 15)) get = Math.pow(get,2)
                 return get
             },
             effectDisplay() { return "x" + format(this.effect()) },
@@ -71,12 +72,28 @@ addLayer("d", {
             unlocked() {return hasUpgrade("d", 13)}
         },
         15: {
-            description: "Virus^Virus^Virus",
+            description: "Virus^2",
             title: "Infectivity increase",
             cost: new Decimal(1000000),
-            effect(){return 5},
-            effectDisplay() { return "I'll leave this one's effect to you." },
+            effect(){return 2},
+            effectDisplay() { return "^" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 14)}
+        },
+        16: {
+            description: "Point gain x 6",
+            title: "The 6th",
+            cost: new Decimal(15e6),
+            effect(){return 6},
+            effectDisplay() { return "x" + format(this.effect()) },
+            unlocked() {return hasUpgrade("d", 15)}
+        },
+        17: {
+            description: "line price scaling / 2",
+            title: "Throw antimatter on the line price scaling",
+            cost: new Decimal(1e9),
+            effect(){return 2},
+            effectDisplay() { return "/" + format(this.effect()) },
+            unlocked() {return hasUpgrade("d", 16)}
         },
     },
 })
@@ -101,7 +118,7 @@ addLayer("l", {
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
-        exp = new Decimal(1)
+        if (hasUpgrade("d", 17)) { exp = new Decimal(1.2) } else { exp = new Decimal(1) }
         return exp
     },
     row: 1, // Row the layer is in on the tree (0 is the first row)
@@ -128,6 +145,17 @@ addLayer("l", {
             effect(){
                 get = Math.log10(player.d.points + 1)+1
                 if (hasUpgrade("d", 14)) {get = Math.pow(get,2)}
+                return get
+            },
+            effectDisplay() { return format(this.effect())+"x" }
+        },
+        13: {
+            description: "There is a smaller, identical dot in every dot so dot gain x 1000",
+            title: "Zoom into a dot",
+            cost: new Decimal(7),
+            unlocked() {return hasUpgrade("l", 12)},
+            effect(){
+                get = 1000
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
