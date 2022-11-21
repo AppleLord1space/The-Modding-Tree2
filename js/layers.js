@@ -1,5 +1,5 @@
 addLayer("d", {
-    branches: [""],
+    branches: ["c"],
     name: "dots", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "D", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
@@ -88,17 +88,127 @@ addLayer("d", {
             unlocked() {return hasUpgrade("d", 15)}
         },
         17: {
-            description: "line price scaling / 2",
-            title: "Throw antimatter on the line price scaling",
+            description: "line price scaling / 2 and unlock a new layer",
+            title: "Repurpose some of the line",
             cost: new Decimal(1e9),
-            effect(){return 2},
+            effect(){
+                return 2
+            },
             effectDisplay() { return "/" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 16)}
         },
     },
 })
+addLayer("c", {
+    branches: [""],
+    name: "Dot Centrifuge", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "C", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+    }},
+    color: "#FFFFFF",
+    requires: new Decimal(1), // Can be a function that takes requirement increases into account
+    resource: "Centrifuge Essence", // Name of prestige currency
+    baseResource: "dots", // Name of resource prestige is based on
+    baseAmount() {return player.d.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.3, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        return exp
+    },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "c", description: "C: Sacrifice your dots to the gods in exchange for Centrifuge Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return hasUpgrade("d", 11)},
+    upgrades: {
+        11: {
+            description: "tbd",
+            title: "tbd",
+            cost: new Decimal(1e999999999999),
+            effect(){
+                get = 1
+                return get
+            },
+            effectDisplay() { return format(this.effect())+"?" }
+        },
+    },
+    buyables: {
+        11: {
+            cost(x) { return new Decimal(1).add(getBuyableAmount("c",11)) },
+            title() {return "Sacrifice your Centrifugal Essence for matter"},
+            display() { return "You will get: " + format(Math.pow(player.c.points,0.5)) + " you have: " + format(getBuyableAmount("c",11))},
+            canAfford() { return player[this.layer].points.gte(this.cost(getBuyableAmount("c",11))) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        21: {
+            cost(x) { return new Decimal(1e9999999999) },
+            title() {return ""},
+            display() { return "red matter"},
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+            },
+            unlocked() {return false}
+        },
+        22: {
+            cost(x) { return new Decimal(1e9999999999) },
+            title() {return ""},
+            display() { return "green matter"},
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+            },
+            unlocked() {return false}
+        },
+        23: {
+            cost(x) { return new Decimal(1e9999999999) },
+            title() {return ""},
+            display() { return "blue matter"},
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+            },
+            unlocked() {return false}
+        },
+    },
+    clickables: {
+        11: {
+            title() {return "R-Matter"},
+            display() {return format(getBuyableAmount("c",21))},
+        },
+        12: {
+            title() {return "G-Matter"},
+            display() {return format(getBuyableAmount("c",22))},
+        },
+        13: {
+            title() {return "B-Matter"},
+            display() {return format(getBuyableAmount("c",23))},
+        },
+    },
+    getMatterGen() {
+
+        if (getBuyableAmount("c",11) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(getBuyableAmount("c",11).divide(getBuyableAmount("c",21).add(1).divide(getBuyableAmount("c",11).times(getBuyableAmount("c",11))))))}
+
+        if (getBuyableAmount("c",21) > 0) {setBuyableAmount("c",22,getBuyableAmount("c",22).add(Math.log10(getBuyableAmount("c",21))))}
+        if (getBuyableAmount("c",22) > 0) {setBuyableAmount("c",23,getBuyableAmount("c",23).add(Math.log10(getBuyableAmount("c",22))))}
+        if (getBuyableAmount("c",23) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(Math.log10(getBuyableAmount("c",23))))}
+
+    }
+},
+)
 addLayer("l", {
-    branches: ["d"],
+    branches: ["d","c"],
     name: "lines", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "L", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
@@ -121,7 +231,7 @@ addLayer("l", {
         if (hasUpgrade("d", 17)) { exp = new Decimal(1.2) } else { exp = new Decimal(1) }
         return exp
     },
-    row: 1, // Row the layer is in on the tree (0 is the first row)
+    row: 1 + 0,
     hotkeys: [
         {key: "l", description: "L: Reset for lines", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
