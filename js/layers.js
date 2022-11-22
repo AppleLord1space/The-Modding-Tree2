@@ -37,8 +37,10 @@ addLayer("d", {
             title: "0 dimensional recursion",
             cost: new Decimal(1),
             effect(){
-                get = Math.log10(player.d.points + 1)+1
+                get = Math.log10(player.d.points + 1)/2+1
                 if (hasUpgrade("d", 12)) get = Math.pow(get,upgradeEffect("d", 12))
+                if (get > 1e6) {get = 1000000 + (Math.pow(get-1000000,0.5))}
+                if (get > 1e9) {get = 1e9}
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
@@ -47,7 +49,10 @@ addLayer("d", {
             description: "The previous upgrade's effect is boosted based on points.",
             title: "Dual core",
             cost: new Decimal(4),
-            effect(){return Math.log10(player.points + 1)/2+1},
+            effect(){get = Math.log10(player.points + 1)/2+1
+            if (get > 5) {get = 5}
+            return get
+            },
             effectDisplay() { return "^" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 11)}
         },
@@ -58,6 +63,7 @@ addLayer("d", {
             effect(){
                 get = Math.pow(Math.log10(player.points + 1)/2+1,0.75)
                 if (hasUpgrade("d", 15)) get = Math.pow(get,2)
+                if (get > 50) {get = 50}
                 return get
             },
             effectDisplay() { return "x" + format(this.effect()) },
@@ -132,7 +138,7 @@ addLayer("c", {
         11: {
             description: "tbd",
             title: "tbd",
-            cost: new Decimal(1e999999999999),
+            cost: new Decimal(1e315),
             effect(){
                 get = 1
                 return get
@@ -185,24 +191,27 @@ addLayer("c", {
     clickables: {
         11: {
             title() {return "R-Matter"},
-            display() {return format(getBuyableAmount("c",21))},
+            display() {return "you have: " + format(getBuyableAmount("c",21)) + ". Current effect: " + format(clickableEffect("c",11)) + "x ???'s effect"},
+            effect() {return Math.pow(getBuyableAmount("c",21),0.5)},
         },
         12: {
             title() {return "G-Matter"},
-            display() {return format(getBuyableAmount("c",22))},
+            display() {return "you have: " + format(getBuyableAmount("c",22)) + ". Current effect: " + format(clickableEffect("c",12)) + "x ???'s effect"},
+            effect() {return Math.pow(getBuyableAmount("c",22),0.5)},
         },
         13: {
             title() {return "B-Matter"},
-            display() {return format(getBuyableAmount("c",23))},
+            display() {return "you have: " + format(getBuyableAmount("c",23)) + ". Current effect: " + format(clickableEffect("c",13)) + "x point gain."},
+            effect() {return Math.pow(getBuyableAmount("c",23),0.5)},
         },
     },
     getMatterGen() {
 
         if (getBuyableAmount("c",11) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(getBuyableAmount("c",11).divide(getBuyableAmount("c",21).add(1).divide(getBuyableAmount("c",11).times(getBuyableAmount("c",11))))))}
-
-        if (getBuyableAmount("c",21) > 0) {setBuyableAmount("c",22,getBuyableAmount("c",22).add(Math.log10(getBuyableAmount("c",21))))}
-        if (getBuyableAmount("c",22) > 0) {setBuyableAmount("c",23,getBuyableAmount("c",23).add(Math.log10(getBuyableAmount("c",22))))}
-        if (getBuyableAmount("c",23) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(Math.log10(getBuyableAmount("c",23))))}
+        
+        if (getBuyableAmount("c",21) > 0) {setBuyableAmount("c",22,getBuyableAmount("c",22).add(Math.log10(getBuyableAmount("c",21).add(1))/300))}
+        if (getBuyableAmount("c",22) > 0) {setBuyableAmount("c",23,getBuyableAmount("c",23).add(Math.log10(getBuyableAmount("c",22).add(1))/300))}
+        if (getBuyableAmount("c",23) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(Math.log10(getBuyableAmount("c",23).add(1))/300))}
 
     }
 },
