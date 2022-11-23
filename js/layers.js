@@ -13,7 +13,7 @@ addLayer("d", {
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
+    exponent: 552, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         mult = mult.times( Math.pow(2,player.l.points))
@@ -36,11 +36,11 @@ addLayer("d", {
             description: "Point gain increased based on dots.",
             title: "0 dimensional recursion",
             cost: new Decimal(1),
-            effect(){
-                get = Math.log10(player.d.points + 1)/2+1
-                if (hasUpgrade("d", 12)) get = Math.pow(get,upgradeEffect("d", 12))
+            effect(){ 
+                get = new Decimal(Math.log10(player.d.points + 1)/2+1)
+                if (hasUpgrade("d", 12)) get = Math.pow(get,Decimal(upgradeEffect("d", 12)))
                 if (get > 1e6) {get = 1000000 + (Math.pow(get-1000000,0.5))}
-                if (get > 1e9) {get = 1e9}
+                if (get > new Decimal(1e9)) {get = new Decimal(1e9)}
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
@@ -49,7 +49,7 @@ addLayer("d", {
             description: "The previous upgrade's effect is boosted based on points.",
             title: "Dual core",
             cost: new Decimal(4),
-            effect(){get = Math.log10(player.points + 1)/2+1
+            effect(){get = new Decimal(Math.log10(player.points + 1)/2+1)
             if (get > 5) {get = 5}
             return get
             },
@@ -61,7 +61,7 @@ addLayer("d", {
             title: "Virus",
             cost: new Decimal(6),
             effect(){
-                get = Math.pow(Math.log10(player.points + 1)/2+1,0.75)
+                get = new Decimal(Math.pow(Math.log10(player.points + 1)/2+1,0.75))
                 if (hasUpgrade("d", 15)) get = Math.pow(get,2)
                 if (get > 50) {get = 50}
                 return get
@@ -73,7 +73,7 @@ addLayer("d", {
             description: "Squares the effect of Learn to zoom in",
             title: "Dual dual core",
             cost: new Decimal(25000),
-            effect(){return 2},
+            effect(){return new Decimal(2)},
             effectDisplay() { return "^" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 13)}
         },
@@ -81,7 +81,7 @@ addLayer("d", {
             description: "Virus^2",
             title: "Infectivity increase",
             cost: new Decimal(1000000),
-            effect(){return 2},
+            effect(){return new Decimal(2)},
             effectDisplay() { return "^" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 14)}
         },
@@ -89,7 +89,7 @@ addLayer("d", {
             description: "Point gain x 6",
             title: "The 6th",
             cost: new Decimal(15e6),
-            effect(){return 6},
+            effect(){return new Decimal(6)},
             effectDisplay() { return "x" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 15)}
         },
@@ -98,7 +98,7 @@ addLayer("d", {
             title: "Repurpose some of the line",
             cost: new Decimal(1e9),
             effect(){
-                return 2
+                return new Decimal(2)
             },
             effectDisplay() { return "/" + format(this.effect()) },
             unlocked() {return hasUpgrade("d", 16)}
@@ -138,9 +138,9 @@ addLayer("c", {
         11: {
             description: "tbd",
             title: "tbd",
-            cost: new Decimal(1e315),
+            cost: new Decimal("1e315"),
             effect(){
-                get = 1
+                get = new Decimal(1)
                 return get
             },
             effectDisplay() { return format(this.effect())+"?" }
@@ -150,7 +150,7 @@ addLayer("c", {
         11: {
             cost(x) { return new Decimal(1).add(getBuyableAmount("c",11)) },
             title() {return "Sacrifice your Centrifugal Essence for matter"},
-            display() { return "You will get: " + format(Math.pow(player.c.points,0.5)) + " you have: " + format(getBuyableAmount("c",11))},
+            display() { return "you have: " + format(getBuyableAmount("c",11))},
             canAfford() { return player[this.layer].points.gte(this.cost(getBuyableAmount("c",11))) },
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -158,7 +158,7 @@ addLayer("c", {
             },
         },
         21: {
-            cost(x) { return new Decimal(1e9999999999) },
+            cost(x) { return new Decimal("1e9999999999") },
             title() {return ""},
             display() { return "red matter"},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -168,7 +168,7 @@ addLayer("c", {
             unlocked() {return false}
         },
         22: {
-            cost(x) { return new Decimal(1e9999999999) },
+            cost(x) { return new Decimal("1e9999999999") },
             title() {return ""},
             display() { return "green matter"},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -178,7 +178,7 @@ addLayer("c", {
             unlocked() {return false}
         },
         23: {
-            cost(x) { return new Decimal(1e9999999999) },
+            cost(x) { return new Decimal("1e9999999999") },
             title() {return ""},
             display() { return "blue matter"},
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -251,7 +251,7 @@ addLayer("l", {
             title: "1 dimensional recursion",
             cost: new Decimal(2),
             effect(){
-                get = Math.pow(2,player.l.points)
+                get = new Decimal(Math.pow(2,player.l.points))
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
@@ -262,7 +262,7 @@ addLayer("l", {
             cost: new Decimal(3),
             unlocked() {return hasUpgrade("l", 11)},
             effect(){
-                get = Math.log10(player.d.points + 1)+1
+                get = new Decimal(Math.log10(player.d.points + 1)+1)
                 if (hasUpgrade("d", 14)) {get = Math.pow(get,2)}
                 return get
             },
@@ -274,7 +274,7 @@ addLayer("l", {
             cost: new Decimal(7),
             unlocked() {return hasUpgrade("l", 12)},
             effect(){
-                get = 1000
+                get = new Decimal(1000)
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
@@ -282,3 +282,4 @@ addLayer("l", {
 
     },
 })
+
