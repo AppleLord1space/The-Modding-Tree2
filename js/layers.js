@@ -20,6 +20,7 @@ addLayer("d", {
         if (hasUpgrade("l", 11)) mult = mult.times( Math.pow(2,player.l.points))
         if (hasUpgrade("l", 12)) mult = mult.times( upgradeEffect("l", 12) )
         if (hasUpgrade("l", 13)) mult = mult.times( upgradeEffect("l", 13) )
+        if (player.p.unlocked) { mult = mult.times(clickableEffect("p",52)) }
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -32,6 +33,7 @@ addLayer("d", {
     ],
     layerShown(){return true},
     upgradespecialstuff() {if (hasUpgrade("d",51)) {player.points = player.points.times(1000)}},
+    upgradespecialstuff() {if (hasUpgrade("d",52)) {player.points = player.points.times(10000)}},
     upgrades: {
         11: {
             description: "Point gain increased based on dots.",
@@ -41,6 +43,7 @@ addLayer("d", {
                 get = new Decimal(Math.log10(player.d.points + 1)).divide(2).add(1)
                 if (hasUpgrade("d", 12)) get = (get * upgradeEffect("d", 12) )
                 if (clickableEffect("c",12) > 1) get = (get * clickableEffect("c",12))
+                if (buyableEffect("v",13) > 1) get = (get * buyableEffect("v",13))
                 if (get > 1e6) {get = 1000000 + (Math.pow(get-1000000,0.5))}
                 if (get > 1e9) {get = new Decimal(1e9)}
                 return get
@@ -122,12 +125,20 @@ addLayer("d", {
             effectDisplay() { return "..." },
             unlocked() {if (player.d.points > 1e14) {if (player.a.unlocked) {return false} else {return true}}}
         },
+        52: {
+            description: "",
+            title: "Ascension #2",
+            cost: new Decimal(2.5e22),
+            effect(){
+                return new Decimal(1)
+            },
+            effectDisplay() { return "..." },
+            unlocked() {if (player.d.points > 1e20) {if (hasMilestone("a",1)) {return false} else {return true}}}
+        },
     },
-    checkauto() {
-
-        if (hasMilestone("v",0)) { automate() }
-
-    }
+    passiveGeneration() {if (hasMilestone("a",1)) { return 0.1 }},
+    autoUpgrade() {return hasMilestone("v",0)},
+    
 })
 addLayer("c", {
     branches: [""],
@@ -157,7 +168,12 @@ addLayer("c", {
     hotkeys: [
         {key: "c", description: "C: Reset for Centrifuge Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return hasUpgrade("d", 17)},
+    layerShown(){if (hasUpgrade("d", 17)) {return true} else {return player.a.unlocked}},
+    automate() {
+
+        if (hasMilestone("l",0)) {setBuyableAmount("c",11,getBuyableAmount("c",11).add(1))}
+
+    },
     upgrades: {
         11: {
             description: "tbd",
@@ -177,7 +193,7 @@ addLayer("c", {
             display() { return "you have: " + format(getBuyableAmount("c",11))},
             canAfford() { return player[this.layer].points.gte(this.cost(getBuyableAmount("c",11))) },
             buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                if (hasMilestone("l",0)) {  } else {player[this.layer].points = player[this.layer].points.sub(this.cost())}
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
         },
@@ -216,17 +232,32 @@ addLayer("c", {
         11: {
             title() {return "R-Matter"},
             display() {return "you have: " + format(getBuyableAmount("c",21)) + ". Current effect: " + format(clickableEffect("c",11)) + "x ???'s effect"},
-            effect() {return Math.pow(getBuyableAmount("c",21),0.5)+1},
+            effect() {
+                get = new Decimal(Math.pow(getBuyableAmount("c",21),0.5)+1)
+                if (buyableEffect("v",12) > 1) { get = get.times(buyableEffect("v",12)) }
+                if (player.p.unlocked) {get = get.times(clickableEffect("p",54))}
+                return get
+            },
         },
         12: {
             title() {return "G-Matter"},
             display() {return "you have: " + format(getBuyableAmount("c",22)) + ". Current effect: " + format(clickableEffect("c",12)) + "x 0 dimensional recursion's effect"},
-            effect() {return Math.pow(getBuyableAmount("c",22),0.5)+1},
+            effect() {
+                get = new Decimal(Math.pow(getBuyableAmount("c",22),0.5)+1);
+                if (buyableEffect("v",12) > 1) { get = get.times(buyableEffect("v",12)) }
+                if (player.p.unlocked) {get = get.times(clickableEffect("p",54))}
+                return get
+            },
         },
         13: {
             title() {return "B-Matter"},
             display() {return "you have: " + format(getBuyableAmount("c",23)) + ". Current effect: " + format(clickableEffect("c",13)) + "x point gain."},
-            effect() {return Math.pow(getBuyableAmount("c",23),0.5)+1},
+            effect() {
+                get = new Decimal(Math.pow(getBuyableAmount("c",23),0.5)+1)
+                if (buyableEffect("v",12) > 1) { get = get.times(buyableEffect("v",12)) }
+                if (player.p.unlocked) {get = get.times(clickableEffect("p",54))}
+                return get
+                },
         },
     },
     getMatterGen() {
@@ -236,8 +267,13 @@ addLayer("c", {
         if (getBuyableAmount("c",21) > 0) {setBuyableAmount("c",22,getBuyableAmount("c",22).add(Math.log10(getBuyableAmount("c",21).add(1))/300))}
         if (getBuyableAmount("c",22) > 0) {setBuyableAmount("c",23,getBuyableAmount("c",23).add(Math.log10(getBuyableAmount("c",22).add(1))/300))}
         if (getBuyableAmount("c",23) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(Math.log10(getBuyableAmount("c",23).add(1))/300))}
-
-    }
+        if (player.p.unlocked) {
+        if (getBuyableAmount("c",11) > (5000 * clickableEffect("p",55))-1) {setBuyableAmount("c",11,new Decimal((5000 * clickableEffect("p",55))-1))}
+        } else {
+        if (getBuyableAmount("c",11) > 4999) {setBuyableAmount("c",11,new Decimal(4999))}
+        }
+    },
+    passiveGeneration() {if (hasMilestone("v",1)) { return 1 }}
 },
 )
 addLayer("l", {
@@ -258,6 +294,8 @@ addLayer("l", {
     exponent: 2, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+        mult = mult.divide(buyableEffect("v",11))
+        if (player.p.unlocked) {mult = mult.divide(clickableEffect("p",51))}
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -268,7 +306,7 @@ addLayer("l", {
     hotkeys: [
         {key: "l", description: "L: Reset for lines", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    
+    canBuyMax() { return hasMilestone("a",0)},
     layerShown(){return true},
     upgrades: {
         11: {
@@ -306,9 +344,23 @@ addLayer("l", {
         },
 
     },
+    milestones: {
+        0: {
+            requirementDescription: "10 lines",
+            effectDescription: "Auto-buy matter which costs nothing.",
+            done() { if (player.l.points > 9) {return true} else {return false} },
+            unlocked() {return hasMilestone("v",1)},
+        },
+    },
+    stuffs() {
+        player.l.resetsNothing = (hasMilestone("p",0));
+    },
+    
+    autoPrestige() {return hasMilestone("p",0)},
+
 })
 addLayer("a", {
-    branches: ["d","l","c"],
+    branches: ["p","l","c"],
     name: "ascension", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "A", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
@@ -322,7 +374,7 @@ addLayer("a", {
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.01, // Prestige currency exponent
+    exponent: 0.1, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         return mult
@@ -357,6 +409,18 @@ addLayer("a", {
             },
             effectDisplay() { if (hasUpgrade("a",11)) {return "Active"} else {return "Inactive"} }
         },
+        12: {
+            description: "Unlock polytopes.",
+            title: "Polytopes",
+            cost: new Decimal(2),
+            effect(){
+                get = new Decimal(1)
+                return get
+            },
+            effectDisplay() { if (hasUpgrade("a",12)) {return "Active"} else {return "Inactive"} },
+            unlocked() {return hasUpgrade("a",11)}
+
+        },
     },
     layerShown(){if (player.points > 9e99) {return true} else {if (hasUpgrade("a",11)) {return true} else {return false}}},
     milestones: {
@@ -364,12 +428,17 @@ addLayer("a", {
             requirementDescription: "1 Ascension",
             effectDescription: "You can buy max lines.",
             done() { return player.a.points > 0 },
-            onComplete() { player.l.canBuyMax = true}
-        }
+            onComplete() { player.l.canMax = true}
+        },
+        1: {
+            requirementDescription: "2 Ascensions",
+            effectDescription: "You gain 10% of dot gain every second.",
+            done() { return player.a.points > 1 },
+        },
     }
 })
 addLayer("v", {
-    branches: ["a","l","c"],
+    branches: ["p","l","c"],
     name: "village", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "V", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
@@ -383,7 +452,7 @@ addLayer("v", {
     baseResource: "Centrifuge Essence", // Name of resource prestige is based on
     baseAmount() {return player.c.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 4, // Prestige currency exponent
+    exponent: 2, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         return mult
@@ -392,25 +461,31 @@ addLayer("v", {
         exp = new Decimal(1)
         return exp
     },
-    row: 2,
+    row: 3,
     hotkeys: [
-        {key: "v", description: "V: Reset for villagers", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "v", description: "V: Reset for villagers", onPress(){if (canReset(this.layer)) {doReset(this.layer)}}},
     ],
     layerShown(){return hasUpgrade("a",11)},
     upgrades: {
 
     },
+    resetsNothing: true,
+    doReset(resettingLayer) { if (resettingLayer = "a") {return false} else {return true}},
     layerShown(){if (hasUpgrade("a",11)) {return true} else {return false}},
     buyables: {
         11: {
             cost(x) { return new Decimal(1) },
             title() {return "Miners"},
-            display() { return "You have " + format(getBuyableAmount("v",11)) + " Miners, And " + format(getBuyableAmount("v",51)) + " minerals."},
-            canAfford() { return player.v.points > 0 },
+            display() { return "You have " + format(getBuyableAmount("v",11)) + " Miners, And " + format(getBuyableAmount("v",51)) + " minerals." + "<br> Currently: Multipling line gain by " + format(buyableEffect("v",11))},
+            canAfford() { return new Decimal(getBuyableAmount("v",11).add(getBuyableAmount("v",12)).add(getBuyableAmount("v",13))) < player.v.points },
             buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
+            effect() {
+
+                return new Decimal(Math.pow(getBuyableAmount("v",51)+1,0.5))
+
+            }
         },
         51: {
             cost(x) { return new Decimal("1e9999") },
@@ -423,12 +498,16 @@ addLayer("v", {
         12: {
             cost(x) { return new Decimal(1) },
             title() {return "Loggers"},
-            display() { return "You have " + format(getBuyableAmount("v",12)) + " Loggers, And " + format(getBuyableAmount("v",52)) + " wood."},
-            canAfford() { return player.v.points > 0 },
+            display() { return "You have " + format(getBuyableAmount("v",12)) + " Loggers, And " + format(getBuyableAmount("v",52)) + " wood." + "<br> Currently: Multipling all matter's effect by " + format(buyableEffect("v",12))},
+            canAfford() { return new Decimal(getBuyableAmount("v",11).add(getBuyableAmount("v",12)).add(getBuyableAmount("v",13))) < player.v.points },
             buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
+            effect() {
+
+                return new Decimal(Math.pow(getBuyableAmount("v",52)+1,0.5))
+
+            }
         },
         52: {
             cost(x) { return new Decimal("1e9999") },
@@ -441,12 +520,16 @@ addLayer("v", {
         13: {
             cost(x) { return new Decimal(1) },
             title() {return "Hunters"},
-            display() { return "You have " + format(getBuyableAmount("v",13)) + " Hunters, And " + format(getBuyableAmount("v",53)) + " leather."},
-            canAfford() { return player.v.points > 0 },
+            display() { return "You have " + format(getBuyableAmount("v",13)) + " Hunters, And " + format(getBuyableAmount("v",53)) + " leather." + "<br> Currently: Multipling 0 dimensional recursion effect by " + format(buyableEffect("v",13))},
+            canAfford() { return new Decimal(getBuyableAmount("v",11).add(getBuyableAmount("v",12)).add(getBuyableAmount("v",13))) < player.v.points },
             buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
-                setBuyableAmount("v",13, getBuyableAmount("v",13).add(1))
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
+            effect() {
+
+                return new Decimal(Math.pow(getBuyableAmount("v",53)+1,0.7))
+
+            }
         },
         53: {
             cost(x) { return new Decimal("1e9999") },
@@ -459,17 +542,181 @@ addLayer("v", {
         
     },
     resourcegen() {
-
-        setBuyableAmount("v",51, getBuyableAmount("v",51).add(getBuyableAmount("v",11).divide(30)))
-        setBuyableAmount("v",52, getBuyableAmount("v",52).add(getBuyableAmount("v",12).divide(30)))
-        setBuyableAmount("v",53, getBuyableAmount("v",53).add(getBuyableAmount("v",13).divide(30)))
+        if (player.p.unlocked) {
+        setBuyableAmount("v",51, getBuyableAmount("v",51).add(getBuyableAmount("v",11).divide(30).times(clickableEffect("p",53))))
+        setBuyableAmount("v",52, getBuyableAmount("v",52).add(getBuyableAmount("v",12).divide(30).times(clickableEffect("p",53))))
+        setBuyableAmount("v",53, getBuyableAmount("v",53).add(getBuyableAmount("v",13).divide(30).times(clickableEffect("p",53))))
+        } else {
+            setBuyableAmount("v",51, getBuyableAmount("v",51).add(getBuyableAmount("v",11).divide(30)))
+            setBuyableAmount("v",52, getBuyableAmount("v",52).add(getBuyableAmount("v",12).divide(30)))
+            setBuyableAmount("v",53, getBuyableAmount("v",53).add(getBuyableAmount("v",13).divide(30)))
+        }
 
     },
     milestones: {
         0: {
-            requirementDescription: "1000 Minerals",
+            requirementDescription: "100 Minerals",
             effectDescription: "Auto-buy dot upgrades.",
-            done() { if (getBuyableAmount("v",51)>999) {return true} else {return false} }
-        }
+            done() { if (getBuyableAmount("v",51) > 100) {return true} else {return false} }
+        },
+        1: {
+            requirementDescription: "3 Villagers",
+            effectDescription: "Gain 100% of Centrifuge Essence gain per second.",
+            done() { if (player.v.points > 2) {return true} else {return false} }
+        },
     },
+    clickables: {
+        11: {
+            title() {return "Respec villagers"},
+            canClick() {return true},
+            onClick() {setBuyableAmount("v",11,new Decimal(0));setBuyableAmount("v",12,new Decimal(0));setBuyableAmount("v",13,new Decimal(0)),setBuyableAmount("v",51,new Decimal(0));setBuyableAmount("v",52,new Decimal(0));setBuyableAmount("v",53,new Decimal(0))},
+            display() {return "Warning: This will reset Minerals, Wood, and Leather."}
+        }
+    }
+})
+addLayer("p", {
+    branches: ["d"],
+    name: "polytopes", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+    }},
+    color: "#7CFF78",
+    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    resource: "polytopes", // Name of prestige currency
+    baseResource: "lines", // Name of resource prestige is based on
+    baseAmount() {return player.l.points}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 2, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        return exp
+    },
+    row: 2,
+    hotkeys: [
+        {key: "p", description: "P: Reset for polytopes", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return hasUpgrade("a",12)},
+    upgrades: {
+        11: {
+            description: "TBD",
+            title: "TBD",
+            cost: new Decimal("1e1e55"),
+            effect(){
+                get = new Decimal(1)
+                return get
+            },
+            effectDisplay() { return format(this.effect())+"x" },
+            unlocked() {return hasMilestone("p",0)},
+        },
+    },
+    milestones: {
+        0: {
+            requirementDescription: "WHY ARE THERE NO UPGRADES HERE!?!? (1 polytope)",
+            effectDescription: "Look harder. Also line gain is automatic and dosent reset anything.",
+            done() { if (getBuyableAmount("v",51) > 100) {return true} else {return false} }
+        },
+    },
+    infoboxes: {
+        polyeffect: {
+            title: "Polytope effects.",
+            body() { return "Line cost / " + format(clickableEffect("p",51)) + "<br> Dot gain x " + format(clickableEffect("p",52)) + "<br> Village material gain x " + format(clickableEffect("p",53)) + "<br> Matter effects x " + format(clickableEffect("p",54)) + "<br> Regular matter cap x " + format(clickableEffect("p",55))},
+        },
+    },
+    getpolyeffects(){
+
+        if (currentpolytope = 1) {}
+        
+    },
+    clickables: {
+        11: {
+            title() {return "Change polytope."},
+            canClick() {return true},
+            onClick() {setClickableState("p",11,1 + getClickableState("p",11)); if (getClickableState("p",11) > 5) {setClickableState("p",11,1)}; if (getClickableState("p",11) < 1) {setClickableState("p",11,1)}},
+            display() {return "Currently type " + format(getClickableState("p",11))},
+            unlocked() {return true},
+        },
+        51: {
+            title() {return "polyeff1"},
+            effect() {
+                get = new Decimal(1)
+                if (getClickableState("p",11) == 1) { get = new Decimal(100) }
+                if (getClickableState("p",11) == 2) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 3) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 4) {get = new Decimal(2) }
+                if (getClickableState("p",11) == 5) {get = new Decimal(500) }
+                if (getClickableState("p",11) == 0) {get = new Decimal(1) }
+                return get
+            },
+            canClick() {return false},
+            unlocked() {return false}
+        },
+        52: {
+            title() {return "polyeff2"},
+            effect() {
+                get = new Decimal(1)
+                if (getClickableState("p",11) == 1) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 2) {get = new Decimal(10) }
+                if (getClickableState("p",11) == 3) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 4) {get = new Decimal(2) }
+                if (getClickableState("p",11) == 5) {get = new Decimal(0.5) }
+                if (getClickableState("p",11) == 0) {get = new Decimal(1) }
+                return get
+            },
+            canClick() {return false},
+            unlocked() {return false}
+        },
+        53: {
+            title() {return "polyeff3"},
+            effect() {
+                get = new Decimal(1)
+                if (getClickableState("p",11) == 1) {get = new Decimal(50) }
+                if (getClickableState("p",11) == 2) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 3) {get = new Decimal(150) }
+                if (getClickableState("p",11) == 4) {get = new Decimal(2) }
+                if (getClickableState("p",11) == 5) {get = new Decimal(0.5) }
+                if (getClickableState("p",11) == 0) {get = new Decimal(1) }
+                return get
+            },
+            canClick() {return false},
+            unlocked() {return false}
+        },
+        54: {
+            title() {return "polyeff4"},
+            effect() {
+                get = new Decimal(1)
+                if (getClickableState("p",11) == 1) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 2) {get = new Decimal(100) }
+                if (getClickableState("p",11) == 3) {get = new Decimal(100) }
+                if (getClickableState("p",11) == 4) {get = new Decimal(2) }
+                if (getClickableState("p",11) == 5) {get = new Decimal(0.5) }
+                if (getClickableState("p",11) == 0) {get = new Decimal(1) }
+                return get
+            },
+            canClick() {return false},
+            unlocked() {return false}
+        },
+        55: {
+            title() {return "polyeff5"},
+            effect() {
+                get = new Decimal(1)
+                if (getClickableState("p",11) == 1) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 2) {get = new Decimal(2) }
+                if (getClickableState("p",11) == 3) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 4) {get = new Decimal(2) }
+                if (getClickableState("p",11) == 5) {get = new Decimal(1) }
+                if (getClickableState("p",11) == 0) {get = new Decimal(1) }
+                return get
+            },
+            canClick() {return false},
+            unlocked() {return false}
+        },
+
+    }
 })
