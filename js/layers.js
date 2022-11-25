@@ -21,6 +21,8 @@ addLayer("d", {
         if (hasUpgrade("l", 12)) mult = mult.times( upgradeEffect("l", 12) )
         if (hasUpgrade("l", 13)) mult = mult.times( upgradeEffect("l", 13) )
         if (player.p.unlocked) { mult = mult.times(clickableEffect("p",52)) }
+        if (hasUpgrade("c", 12)) mult = mult.times( 100000 )
+        if (hasUpgrade("l", 14)) mult = mult.times( 10 )
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -32,8 +34,13 @@ addLayer("d", {
         {key: "d", description: "D: Reset for dots", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true},
-    upgradespecialstuff() {if (hasUpgrade("d",51)) {player.points = player.points.times(1000)}},
-    upgradespecialstuff() {if (hasUpgrade("d",52)) {player.points = player.points.times(10000)}},
+    upgradespecialstuff() {
+
+     if (hasUpgrade("d",51)) {player.points = player.points.times(1000)}
+     if (hasUpgrade("d",52)) {player.points = player.points.times(10000)}
+     if (hasUpgrade("d",53)) {player.points = player.points.times(1000000)}
+
+},
     upgrades: {
         11: {
             description: "Point gain increased based on dots.",
@@ -46,6 +53,7 @@ addLayer("d", {
                 if (buyableEffect("v",13) > 1) get = (get * buyableEffect("v",13))
                 if (get > 1e6) {get = 1000000 + (Math.pow(get-1000000,0.5))}
                 if (get > 1e9) {get = new Decimal(1e9)}
+                if (format(get) == "NaN") { get = new Decimal(1e9) }
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
@@ -135,6 +143,16 @@ addLayer("d", {
             effectDisplay() { return "..." },
             unlocked() {if (player.d.points > 1e20) {if (hasMilestone("a",1)) {return false} else {return true}}}
         },
+        53: {
+            description: "",
+            title: "Ascension #3",
+            cost: new Decimal(5e33),
+            effect(){
+                return new Decimal(1)
+            },
+            effectDisplay() { return "..." },
+            unlocked() {if (player.d.points > 1e30) {if (hasMilestone("a",2)) {return false} else {return true}}}
+        },
     },
     passiveGeneration() {if (hasMilestone("a",1)) { return 0.1 }},
     autoUpgrade() {return hasMilestone("v",0)},
@@ -158,6 +176,7 @@ addLayer("c", {
     exponent: 0.3, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+        if (clickableEffect("c",14)>1) {mult = mult.times(clickableEffect("c",14))}
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -176,14 +195,26 @@ addLayer("c", {
     },
     upgrades: {
         11: {
-            description: "tbd",
-            title: "tbd",
-            cost: new Decimal("1e315"),
+            description: "Unlock A-Matter",
+            title: "A fourth state of matter",
+            cost: new Decimal(5e6),
             effect(){
                 get = new Decimal(1)
                 return get
             },
-            effectDisplay() { return format(this.effect())+"?" }
+            effectDisplay() { return "idk" },
+            unlocked() { return getBuyableAmount("cb",11)>0 }
+        },
+        12: {
+            description: "100000x dot gain for no reason in particular",
+            title: "Dot boost",
+            cost: new Decimal(1e8),
+            effect(){
+                get = new Decimal(500)
+                return get
+            },
+            effectDisplay() { return "500x" },
+            unlocked() { return player.cb.points > 2 }
         },
     },
     buyables: {
@@ -227,6 +258,16 @@ addLayer("c", {
             },
             unlocked() {return false}
         },
+        24: {
+            cost(x) { return new Decimal("1e9999999999") },
+            title() {return ""},
+            display() { return "alpha matter"},
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+            },
+            unlocked() {return false}
+        },
     },
     clickables: {
         11: {
@@ -259,6 +300,16 @@ addLayer("c", {
                 return get
                 },
         },
+        14: {
+            title() {return "A-Matter"},
+            display() {return "you have: " + format(getBuyableAmount("c",24)) + ". Current effect: " + format(clickableEffect("c",14)) + "x Centrifuge Essence gain."},
+            effect() {
+                get = new Decimal(Math.pow(getBuyableAmount("c",24),0.5)+1)
+                if (player.p.unlocked) {get = get.times(50)}
+                return get
+                },
+                unlocked() {return hasUpgrade("c",11)},
+        },
     },
     getMatterGen() {
 
@@ -267,6 +318,7 @@ addLayer("c", {
         if (getBuyableAmount("c",21) > 0) {setBuyableAmount("c",22,getBuyableAmount("c",22).add(Math.log10(getBuyableAmount("c",21).add(1))/300))}
         if (getBuyableAmount("c",22) > 0) {setBuyableAmount("c",23,getBuyableAmount("c",23).add(Math.log10(getBuyableAmount("c",22).add(1))/300))}
         if (getBuyableAmount("c",23) > 0) {setBuyableAmount("c",21,getBuyableAmount("c",21).add(Math.log10(getBuyableAmount("c",23).add(1))/300))}
+        if (hasUpgrade("c",11)) {if (getBuyableAmount("c",23) > 0) {setBuyableAmount("c",24,getBuyableAmount("c",24).add(Math.log10(getBuyableAmount("c",23).add(1))/300))}}
         if (player.p.unlocked) {
         if (getBuyableAmount("c",11) > (5000 * clickableEffect("p",55))-1) {setBuyableAmount("c",11,new Decimal((5000 * clickableEffect("p",55))-1))}
         } else {
@@ -296,6 +348,7 @@ addLayer("l", {
         mult = new Decimal(1)
         mult = mult.divide(buyableEffect("v",11))
         if (player.p.unlocked) {mult = mult.divide(clickableEffect("p",51))}
+        if (getBuyableAmount("cb",21)>0) {mult = mult.divide(Math.log10(Math.pow(player.p.points,4)+10))}
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -327,6 +380,8 @@ addLayer("l", {
             effect(){
                 get = new Decimal(Math.log10(player.d.points + 1)+1)
                 if (hasUpgrade("d", 14)) {get = Math.pow(get,2)}
+                if (get > 1000) {get = new Decimal(1000)}
+                if (format(get) == "NaN") {get = new Decimal(1000)}
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" }
@@ -342,6 +397,17 @@ addLayer("l", {
             },
             effectDisplay() { return format(this.effect())+"x" }
         },
+        14: {
+            description: "10x dots",
+            title: "Reminder to use the cosmic branching sometimes",
+            cost: new Decimal(13),
+            unlocked() {return hasUpgrade("c", 12)},
+            effect(){
+                get = new Decimal(10)
+                return get
+            },
+            effectDisplay() { return format(this.effect())+"x" }
+        },
 
     },
     milestones: {
@@ -351,9 +417,15 @@ addLayer("l", {
             done() { if (player.l.points > 9) {return true} else {return false} },
             unlocked() {return hasMilestone("v",1)},
         },
+        1: {
+            requirementDescription: "12 lines",
+            effectDescription: "Unlock the cosmic branching.",
+            done() { if (player.l.points > 11) {return true} else {return false} },
+            unlocked() {return hasMilestone("a",1)},
+        },
     },
     stuffs() {
-        player.l.resetsNothing = (hasMilestone("p",0));
+        player.l.resetsNothing = hasMilestone("p",0);
     },
     
     autoPrestige() {return hasMilestone("p",0)},
@@ -421,6 +493,18 @@ addLayer("a", {
             unlocked() {return hasUpgrade("a",11)}
 
         },
+        13: {
+            description: "TBD.",
+            title: "TBD",
+            cost: new Decimal(3),
+            effect(){
+                get = new Decimal(1)
+                return get
+            },
+            effectDisplay() { if (hasUpgrade("a",12)) {return "Active"} else {return "Inactive"} },
+            unlocked() {return hasUpgrade("a",11)}
+
+        },
     },
     layerShown(){if (player.points > 9e99) {return true} else {if (hasUpgrade("a",11)) {return true} else {return false}}},
     milestones: {
@@ -434,6 +518,11 @@ addLayer("a", {
             requirementDescription: "2 Ascensions",
             effectDescription: "You gain 10% of dot gain every second.",
             done() { return player.a.points > 1 },
+        },
+        2: {
+            requirementDescription: "3 Ascensions",
+            effectDescription: "TBD",
+            done() { return player.a.points > 2 },
         },
     }
 })
@@ -564,6 +653,11 @@ addLayer("v", {
             effectDescription: "Gain 100% of Centrifuge Essence gain per second.",
             done() { if (player.v.points > 2) {return true} else {return false} }
         },
+        2: {
+            requirementDescription: "6 Villagers",
+            effectDescription: "A-Matter also affects point gain.",
+            done() { if (player.v.points > 6) {return true} else {return false} }
+        },
     },
     clickables: {
         11: {
@@ -605,22 +699,22 @@ addLayer("p", {
     layerShown(){return hasUpgrade("a",12)},
     upgrades: {
         11: {
-            description: "TBD",
-            title: "TBD",
+            description: "Unlock some new dot stuff.",
+            title: "Some new dot stuff",
             cost: new Decimal("1e1e55"),
             effect(){
                 get = new Decimal(1)
                 return get
             },
             effectDisplay() { return format(this.effect())+"x" },
-            unlocked() {return hasMilestone("p",0)},
+            unlocked() {return false},
         },
     },
     milestones: {
         0: {
             requirementDescription: "WHY ARE THERE NO UPGRADES HERE!?!? (1 polytope)",
-            effectDescription: "Look harder. Also line gain is automatic and dosent reset anything.",
-            done() { if (getBuyableAmount("v",51) > 100) {return true} else {return false} }
+            effectDescription: "Line gain is automatic.",
+            done() { if (player.p.points > 0) {return true} else {return false} }
         },
     },
     infoboxes: {
@@ -719,4 +813,57 @@ addLayer("p", {
         },
 
     }
+})
+addLayer("cb", {
+    branches: ["p","l","c"],
+    name: "Cosmic Branching", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "CB", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+    }},
+    color: "#B900FF",
+    requires: new Decimal(1e25), // Can be a function that takes requirement increases into account
+    resource: "cosmic seeds", // Name of prestige currency
+    baseResource: "dots", // Name of resource prestige is based on
+    baseAmount() {return player.d.points}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 3, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        return exp
+    },
+    row: 3,
+    hotkeys: [
+        {key: "b", description: "B: Embrace the Cosmic Branching", onPress(){if (canReset(this.layer)) doReset(this.layer); layerDataReset(this.layer, "points");}},
+    ],
+    buyables: {
+        11: {
+            cost(x) { return new Decimal(2) },
+            title() { return "Centrifuge Enhancement" },
+            display() { return "Unlock a centrifuge essence upgrade <br> requirement: 2" },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            purchaseLimit: 1,
+        },
+        31: {
+            cost(x) { return new Decimal(4) },
+            title() { return "3 Dimensional Recursion" },
+            display() { return "The third dimension boosts the first (polytopes boost lines). Also 1000x points. <br> requirement: 4" },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            purchaseLimit: 1,
+            branches: ["11"]
+        },
+    },
+    layerShown(){if (hasMilestone("l",1)) {return true} else {if (player.cb.points > 0) {return true} else { if (getBuyableAmount("cb",11)>0) {return true} else {return false} }}},
 })

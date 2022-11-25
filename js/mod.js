@@ -45,7 +45,9 @@ function getPointGen() {
 	if (hasUpgrade("d", 11)) gain = gain.times(upgradeEffect("d", 11))
 	if (hasUpgrade("d", 13)) gain = gain.times(upgradeEffect("d", 13))
 	if (hasUpgrade("d", 16)) gain = gain.times(upgradeEffect("d", 16))
-	if (clickableEffect("c",11) > 0) gain = gain.times(clickableEffect("c",11))
+	if (clickableEffect("c",11) > 1) gain = gain.times(clickableEffect("c",11))
+	if (hasMilestone("v",2)) {if (clickableEffect("c",14) > 1) gain = gain.times(clickableEffect("c",14))}
+	if (getBuyableAmount("cb",21)>0) {gain = gain.times(1000)}
 	//if (clickableEffect("c",12) > 0) gain = gain.times(clickableEffect("c",12))
 	//if (clickableEffect("c",13) > 0) gain = gain.times(clickableEffect("c",13))
 	return gain
