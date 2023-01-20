@@ -32,7 +32,7 @@ addLayer("c", {
             description: "Gain 0.1 matter per second",
             cost: new Decimal(1),
             effect() { return new Decimal(0.1) },
-            effectDisplay() {return format(upgradeEffect("c",13)) + "x"},
+            effectDisplay() {return format(getPointGen()) + "/s"},
          },
          12: {
              description: "Double matter generation",
@@ -76,6 +76,7 @@ addLayer("f", {
     exponent: 2, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+        if (hasMilestone("f",1)) {mult = mult.times(2)}
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -102,9 +103,14 @@ addLayer("f", {
     milestones: {
         0: {
             requirementDescription: "1 Energy at once",
-            effectDescription: "blah",
+            effectDescription: "double matter generation",
             done() { return player.f.points.gte(1) }
-        }
+        },
+        1: {
+            requirementDescription: "2 Energy at once",
+            effectDescription: "double energy gain and automate collapse upgrades.",
+            done() { return player.f.points.gte(2) },
+        },
     },
     
 })
