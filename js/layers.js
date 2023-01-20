@@ -16,7 +16,7 @@ addLayer("n", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-        if (hasUpgrade("n",11)) mult = mult.times(Math.log(player.points+1)+1)
+        if (hasUpgrade("n",11)) mult = mult.times(new Decimal(Math.log(player.points.add(1))).add(1))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -60,14 +60,23 @@ addLayer("n", {
             },
         },
     },
+    collapse(){
+        if (novacap = "true") {
+              if (player.n.points > 499) { player.crystalline = player.crystalline.add(1) }
+              if (player.n.points > 499) { setBuyableAmount("n",11,0) }
+              if (player.n.points > 499) { setBuyableAmount("n",12,0) }
+              if (player.n.points > 499) { player.n.points = new Decimal(0) }
+        }
+
+    },
     bars: {
         bar1: {
             direction: RIGHT,
             width: 500,
             height: 25,
-            progress() { return new Decimal(player.n.points+1).div(new Decimal(500)) },
+            progress() { return new Decimal(player.n.points).div(new Decimal(500)) },
             unlocked() { return true },
-            display() { return "Progress to collapse" }
+            display() { return "Progress to next" }
         },
     },
     tabFormat: {
@@ -85,7 +94,9 @@ addLayer("n", {
         },
         "Collapse": {
             content: [
-                "main-display",
+                ["display-text",
+                    function() { return 'You have ' + format(player.crystalline) + ' crystalline' },
+                    { "color": "magenta", "font-size": "24px", "font-family": "Comic Sans MS" }],
                 "blank",
                 "milestones",
                 "blank",
@@ -98,8 +109,11 @@ addLayer("n", {
         11: {
             title: "ͱϘϱϟͳ",
             description: "multiply nova gain based off stardust",
-            effectDisplay() { return "" + format(Math.log(player.points)) + "x"},
-            cost: new Decimal(500),
+            effectDisplay() { return "" + format(new Decimal(Math.log(player.points.add(1))).add(1)) + "x"},
+            cost: new Decimal(1),
+            canAfford() { if (player.crystalline.gte(this.cost)) {return true} else {return false}},
+            pay() { player.crystalline.sub(this.cost)},
+            currencyDisplayName: "Crystalline"
         },
     }
 }),
@@ -150,7 +164,7 @@ addLayer("a", {
         13: {
             name: "The great collapse",
             done() { return (player.n.points > 499) },
-            tooltip: "Aquire 500 nova"
+            tooltip: "Collapse"
         },
     },
 })

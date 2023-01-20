@@ -1,5 +1,5 @@
 let modInfo = {
-	name: "The Matter Tree",
+	name: "The Nova Tree",
 	id: "applelordthirdtree",
 	author: "AppleLord",
 	pointsName: "stardust",
@@ -18,8 +18,8 @@ let VERSION = {
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Just a backup incase things go wrong.`
+	<h3>v0.1</h3><br>
+		- The beginning.`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -50,6 +50,8 @@ function getPointGen() {
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	crystalline: new Decimal(0),
+	novacap: "true",
 }}
 
 // Display extra things at the top of the page
