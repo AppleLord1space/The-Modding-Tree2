@@ -1,19 +1,124 @@
-addLayer("c", {
+addLayer("n", {
     branches: [],
-    name: "collapse", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "δ", // This appears on the layer's node. Default is the id with the first letter capitalized
+    name: "Nova", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "Ψ", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
     }},
-    color: "#DE7200",
+    color: "#42039C",
     requires: new Decimal(1), // Can be a function that takes requirement increases into account
-    resource: "pressure", // Name of prestige currency
-    baseResource: "matter", // Name of resource prestige is based on
+    resource: "Nova", // Name of prestige currency
+    baseResource: "stardust", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.5, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        if (hasUpgrade("n",11)) mult = mult.times(Math.log(player.points+1)+1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        return exp
+    },
+    row: 0, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "n", description: "N: Collapse your stardust into nova", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return true},
+    buyables: {
+        11: {
+            cost(x) { let a = new Decimal(x).pow(3).add(1) 
+            if (getBuyableAmount("n",12) > 0) a = a.div(buyableEffect("n",12))
+            return a
+            },
+            title() { return "Formation Alpha" },
+            display() { return "Boosts stardust gain by " + format(buyableEffect("n",11)) + "x<br>Cost: " + format(this.cost()) + " nova"},
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect(x) { let a = new Decimal(x).pow(2).add(1) 
+            if (hasAchievement("a",12)) a = a.times(new Decimal(4))
+            return a
+            },
+        },
+        12: {
+            cost(x) { return new Decimal(x).pow(4).add(7) },
+            title() { return "Formation Beta" },
+            display() { return "Divides formation a cost by " + format(buyableEffect("n",12)) + "x<br>Cost: " + format(this.cost()) + " formation alpha"},
+            canAfford() { return new Decimal(getBuyableAmount("n",11)).gte(this.cost()) },
+            buy() {
+                setBuyableAmount("n",11,new Decimal(getBuyableAmount("n",11)).sub(this.cost()))
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect(x) { let a = new Decimal(x).pow(2).add(1) 
+            return a
+            },
+        },
+    },
+    bars: {
+        bar1: {
+            direction: RIGHT,
+            width: 500,
+            height: 25,
+            progress() { return new Decimal(player.n.points+1).div(new Decimal(500)) },
+            unlocked() { return true },
+            display() { return "Progress to collapse" }
+        },
+    },
+    tabFormat: {
+        "Nova": {
+            content: [
+                "main-display",
+                ["bar",["bar1"]],
+                "blank",
+                "prestige-button",
+                "blank",
+                "milestones",
+                "blank",
+                "buyables",
+            ],
+        },
+        "Collapse": {
+            content: [
+                "main-display",
+                "blank",
+                "milestones",
+                "blank",
+                "upgrades"
+            ],
+            unlocked() {if (player.n.points > 499) {return true} else {if (hasAchievement("a",13)) {return true} else {return false} }},
+        },
+    },
+    upgrades: {
+        11: {
+            title: "ͱϘϱϟͳ",
+            description: "multiply nova gain based off stardust",
+            effectDisplay() { return "" + format(Math.log(player.points)) + "x"},
+            cost: new Decimal(500),
+        },
+    }
+}),
+addLayer("a", {
+    branches: [],
+    name: "achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "ϟ", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 4, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#FFEC00",
+    requires: new Decimal(Infinity), // Can be a function that takes requirement increases into account
+    resource: "achievements", // Name of prestige currency
+    baseResource: "stardust", // Name of resource prestige is based on
+    baseAmount() {return new Decimal(0)}, // Get the current amount of baseResource
+    type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         return mult
@@ -23,94 +128,29 @@ addLayer("c", {
         return exp
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-        {key: "c", description: "C: Collapse for pressure", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
     layerShown(){return true},
-    upgrades: {
-        11: {
-            description: "Gain 0.1 matter per second",
-            cost: new Decimal(1),
-            effect() { return new Decimal(0.1) },
-            effectDisplay() {return format(getPointGen()) + "/s"},
-         },
-         12: {
-             description: "Double matter generation",
-             cost: new Decimal(1),
-             effect() { return new Decimal(2) },
-             effectDisplay() {return format(upgradeEffect("c",13)) + "x"},
-             unlocked() { return hasUpgrade("c",11) }
-          },
-          13: {
-              description: "Double matter generation",
-              cost: new Decimal(1),
-              effect() { return new Decimal(2) },
-              effectDisplay() {return format(upgradeEffect("c",13)) + "x"},
-              unlocked() { return hasUpgrade("c",12) }
-           },
-           14: {
-               description: "Unlock fusion",
-               cost: new Decimal(5),
-               effect() { return new Decimal(1) },
-               unlocked() { return hasUpgrade("c",13) },
-            },
-    },
-    
-})
-addLayer("f", {
-    branches: ["c"],
-    name: "fusion", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "λ", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    startData() { return {
-        unlocked: false,
-		points: new Decimal(0),
-        best: new Decimal(0),
-    }},
-    color: "#53FFA1",
-    requires: new Decimal(5), // Can be a function that takes requirement increases into account
-    resource: "energy", // Name of prestige currency
-    baseResource: "pressure", // Name of resource prestige is based on
-    baseAmount() {return player.c.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 2, // Prestige currency exponent
-    gainMult() { // Calculate the multiplier for main currency from bonuses
-        mult = new Decimal(1)
-        if (hasMilestone("f",1)) {mult = mult.times(2)}
-        return mult
-    },
-    gainExp() { // Calculate the exponent on main currency from bonuses
-        exp = new Decimal(1)
-        return exp
-    },
-    row: 1, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-        {key: "f", description: "F: fuse matter for energy", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    decay() {
-        player.f.points = new Decimal(player.f.points * 0.995)
-    },
-    layerShown() {if (hasUpgrade("c",14)) {return true} else if (player.f.best > 0) {return true} else {return false}},
-    upgrades: {
-        11: {
-            description: "Gain 0.1 matter per second",
-            cost: new Decimal(1),
-            effect() { return new Decimal(0.1) },
-            effectDisplay() {return format(upgradeEffect("c",13)) + "x"},
-            unlocked() { return false }
-         },
-    },
-    milestones: {
-        0: {
-            requirementDescription: "1 Energy at once",
-            effectDescription: "double matter generation",
-            done() { return player.f.points.gte(1) }
-        },
-        1: {
-            requirementDescription: "2 Energy at once",
-            effectDescription: "double energy gain and automate collapse upgrades.",
-            done() { return player.f.points.gte(2) },
+    tabFormat: {
+        "Achievements": {
+            content: [
+                "achievements"
+            ],
         },
     },
-    
+    achievements: {
+        11: {
+            name: "Essence of creation",
+            done() { return (player.n.points > 0) },
+            tooltip: "Get 1 nova"
+        },
+        12: {
+            name: "Stay in formation",
+            done() { return (getBuyableAmount("n",11) > 4) },
+            tooltip: "Aquire 5 formation alphas<br>Reward: 4x formation alpha's effect"
+        },
+        13: {
+            name: "The great collapse",
+            done() { return (player.n.points > 499) },
+            tooltip: "Aquire 500 nova"
+        },
+    },
 })

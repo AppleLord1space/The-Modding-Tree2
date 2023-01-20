@@ -1,8 +1,8 @@
 let modInfo = {
 	name: "The Matter Tree",
-	id: "applesecondtree",
+	id: "applelordthirdtree",
 	author: "AppleLord",
-	pointsName: "matter",
+	pointsName: "stardust",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -43,12 +43,9 @@ function getPointGen() {
 		return new Decimal(0)
 	
 	let gain = new Decimal(0.1)
-	
-	if (!hasUpgrade("c", 11)) gain = new Decimal(0)
-	if (hasUpgrade("c", 12)) gain = gain.times(2)
-	if (hasUpgrade("c", 13)) gain = gain.times(2)
-	if (player.f.points > 0.1) gain = gain.times(Math.pow(player.f.points+1,0.8) + 1)
-	if (hasMilestone("f",0)) gain = gain.times(2)
+
+	gain = gain.times(buyableEffect("n",11))
+
 	return gain
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
