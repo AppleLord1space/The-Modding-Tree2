@@ -13,13 +13,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0",
-	name: "epic",
+	num: "0.2",
+	name: "Nova",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.1</h3><br>
-		- The beginning.`
+	<h3>v0.2</h3><br>
+		- Finished the Nova layer, may need balancing in the future.`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -44,13 +44,17 @@ function getPointGen() {
 	
 	let gain = new Decimal(0.1)
 
-	gain = gain.times(buyableEffect("n",11))
+	if (getBuyableAmount("n",11) > 0) gain = gain.times(buyableEffect("n",11))
+	if (hasAchievement("a",13)) gain = gain.div(new Decimal(3))
+	if (getBuyableAmount("n",13) > 0) gain = gain.times(buyableEffect("n",13))
+	if (hasUpgrade("n",16)) gain = gain.times(100)
 
 	return gain
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
 	crystalline: new Decimal(0),
+	ngalaxies: new Decimal(0),
 	novacap: "true",
 }}
 
