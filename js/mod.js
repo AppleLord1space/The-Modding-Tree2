@@ -13,11 +13,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2",
-	name: "Nova",
+	num: "0.25",
+	name: "Void 1/2",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	
+	<h3>v0.25</h3><br>
+		- Started off the void layer.
+		<br>
 	<h3>v0.2</h3><br>
 		- Finished the Nova layer, may need balancing in the future.`
 
