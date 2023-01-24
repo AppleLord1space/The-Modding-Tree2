@@ -3,7 +3,8 @@ var layoutInfo = {
     startNavTab: "tree-tab",
 	showTree: true,
 
-    treeLayout: ""
+    treeLayout: [["blank", "blank", "blank", "blank", "blank", "blank", "blank", "blank", "a"], ["n"], ["v"]]
+     
 
     
 }
@@ -14,6 +15,7 @@ addNode("blank", {
     layerShown: "ghost",
 }, 
 )
+
 
 
 addLayer("tree-tab", {

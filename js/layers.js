@@ -33,7 +33,7 @@ addLayer("n", {
     buyables: {
         11: {
             cost(x) { let a = new Decimal(x).pow(3).add(1) 
-            if (getBuyableAmount("n",12) > 0) a = a.div(buyableEffect("n",12))
+            if (getBuyableAmount("n",12).gte(1)) a = a.div(buyableEffect("n",12))
             return a
             },
             title() { return "Formation Alpha" },
@@ -58,6 +58,7 @@ addLayer("n", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) { let a = new Decimal(x).pow(2).add(1) 
+                if (player.v.voidpower.gte(1)) {if (a.gte(2)) { a = a.times(player.v.voidpower.add(1).pow(0.5)) }}
             return a
             },
         },
@@ -105,12 +106,14 @@ addLayer("n", {
         },
     },
     collapse(){
-        if (novacap = "true") {
-              if (player.n.points > 499) { player.crystalline = player.crystalline.add(1) }
-              if (player.n.points > 499) { if (!hasUpgrade("n",15)) {setBuyableAmount("n",11,0)} }
-              if (player.n.points > 499) { if (!hasUpgrade("n",14)) {setBuyableAmount("n",12,0)} }
-              if (player.n.points > 499) { player.points = new Decimal(0) }
-              if (player.n.points > 499) { player.n.points = new Decimal(0) }
+        if (!hasMilestone("v",0)) {
+            if (novacap = "true") {
+                  if (player.n.points > 499) { player.crystalline = player.crystalline.add(1) }
+                  if (player.n.points > 499) { if (!hasUpgrade("n",15)) {setBuyableAmount("n",11,0)} }
+                  if (player.n.points > 499) { if (!hasUpgrade("n",14)) {setBuyableAmount("n",12,0)} }
+                  if (player.n.points > 499) { player.points = new Decimal(0) }
+                  if (player.n.points > 499) { player.n.points = new Decimal(0) }
+            }
         }
     },
     bars: {
@@ -140,6 +143,7 @@ addLayer("n", {
         },
         "Collapse": {
             content: [
+                ["clickable",["21"]],
                 ["display-text",
                     function() { return 'You have ' + format(player.crystalline) + ' crystalline' },
                     { "color": "magenta", "font-size": "24px", "font-family": "Comic Sans MS" }],
@@ -256,13 +260,27 @@ addLayer("n", {
             onClick() {setBuyableAmount("n",14,0)},
             canClick() {return true},
         },
+        21: {
+            display() {return "Collapse for " + format(player.n.points.sub(499).pow(new Decimal(0.5))) + " crystalline"},
+            onClick() {
+                player.crystalline = player.crystalline.add(player.n.points.sub(499).pow(new Decimal(0.5)))
+                player.n.points = new Decimal(0)
+                player.points = new Decimal(0)
+            
+            },
+            canClick() {return (player.n.points.gte(500))},
+            unlocked() {return (hasMilestone("v",0))}
+        },
     }
 }),
+
+
+
 addLayer("a", {
     branches: [],
     name: "achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "🏆", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 4, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
@@ -283,7 +301,7 @@ addLayer("a", {
         exp = new Decimal(1)
         return exp
     },
-    row: 0, // Row the layer is in on the tree (0 is the first row)
+    row: 100, // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     tabFormat: {
         "Achievements": {
@@ -291,6 +309,10 @@ addLayer("a", {
                 "achievements"
             ],
         },
+    },
+    resetsNothing: true,
+    doReset() {
+        layerDataReset("a",["achievements"])
     },
     achievements: {
         11: {
@@ -326,11 +348,128 @@ addLayer("a", {
 
         },
         21: {
-            name: "Layer 2?",
-            done() { if (player.crystalline > 199) {if (getBuyableAmount("n",15) > 0) {return true} else {return false}} else {return false} },
-            tooltip: "This is where the second layer would be, get 200 crystalline after getting two crystalline assimilators.",
-            image: ""
+            name: "Assimilation",
+            done() { return (player.v.points.gte(1)) },
+            tooltip: "Preform a void reset",
+            image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAADgCAMAAAAt85rTAAAAA1BMVEUAAACnej3aAAAASElEQVR4nO3BMQEAAADCoPVPbQo/oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICXAcTgAAG6EJuyAAAAAElFTkSuQmCC"
 
+        },
+    },
+}),
+
+
+
+addLayer("v", {
+    branches: ["n"],
+    startData() { return {                  // startData is a function that returns default data for a layer. 
+        unlocked: false,                     // You can add more variables here to add them to your layer.
+        points: new Decimal(0), 
+        voidpower: new Decimal(0),            // "points" is the internal name for the main resource of the layer.
+    }},
+
+    symbol: "θ",
+    color: "#FFFFFF",                       // The color for this layer, which affects many elements.
+    resource: "void",            // The name of this layer's main prestige resource.
+    row: 1,                                 // The row this layer is on (0 is the first row).
+
+    baseResource: "crystalline",                 // The name of the resource your prestige gain is based on.
+    baseAmount() { return player.crystalline },  // A function to return the current amount of baseResource.
+
+    requires: new Decimal(200),              // The amount of the base needed to  gain 1 of the prestige currency.
+                                            // Also the amount required to unlock the layer.
+    type: "static",                         // Determines the formula used for calculating prestige currency.
+    exponent: 0.5,                          // "normal" prestige gain is (currency^exponent).
+
+    gainMult() {                            // Returns your multiplier to your gain of the prestige resource.
+        return new Decimal(1)               // Factor in any bonuses multiplying gain here.
+    },
+    gainExp() {                             // Returns the exponent to your gain of the prestige resource.
+        return new Decimal(1)
+    },
+
+    hotkeys: [
+        {key: "v", description: "V: Collapse your crystalline into void", onPress(){if (canReset(this.layer)) {
+            doReset(this.layer)
+                
+        }}},
+    ],
+    doReset() {
+        player.crystalline = new Decimal(0)
+    },
+    layerShown(){return true},
+
+
+    upgrades: {
+        11: {
+            title: "λξζ",
+            description: "",
+            effectDisplay() { return "" + format(new Decimal(Math.log(player.points.add(1))).add(1)) + "x"},
+            cost: new Decimal(1),
+            canAfford() { if (player.crystalline >= this.cost) {return true} else {return false}},
+            pay() { player.crystalline = player.crystalline.sub(this.cost)},
+            currencyDisplayName: "Crystalline",
+            currencyInternalName: "crystalline",
+        },
+    },
+    clickables: {
+        11: {
+            display() {return "Obliterate all void (YOU DO NOT GAIN ANYTHING, THIS ACTION IS NOT REVERSABLE)"},
+            onClick() {player.v.points = new Decimal(0)},
+            canClick() {return true},
+        },
+        12: {
+            display() {return "gain 1 void"},
+            onClick() {player.v.points = player.v.points.add(1)},
+            canClick() {return true},
+        },
+    },
+    tabFormat: {
+        "Void": {
+            content: [
+                "main-display",
+                ["display-text",
+                    function() { return 'You have ' + format(player.v.voidpower) + ' void power, dissipating at a rate of 2%/frame, which is boosting the effect of formation betas by ' + format(player.v.voidpower.add(1).pow(0.5)) + "x" },
+                    { "color": "white", "font-size": "12px", "font-family": "Comic Sans MS" }],
+                "blank",
+                "prestige-button",
+                "blank",
+                ["milestone",["0"]],
+                "blank",
+                ["buyable",["11"]],
+                
+            ],
+        },
+        "Decay": {  // Note for when I get to making this: Unless I think of something better, should be kinda like time reversal from distance incremental.
+            content: [
+            ],
+            unlocked() {return false},
+        },
+    },
+    voidpowerstuff() {
+        if (getBuyableAmount("v",11).gte(1)) {player.v.voidpower = player.v.voidpower.add(buyableEffect("v",11))}
+        player.v.voidpower = player.v.voidpower.times(0.98)
+
+    },
+    milestones: {
+        0: {
+            requirementDescription: "1 Void",
+            effectDescription: "due to the power of the void that surrounds you: 3x Stardust gain, Also removes the cap on nova.",
+            done() { return player.v.points.gte(1) }
+        },
+    },
+    buyables: {
+        11: {
+            cost(x) { return new Decimal(x).add(1).pow(2) },
+            title() { return "Void engine" },
+            display() { return "Generates " + format(buyableEffect("v",11)) + " void power<br>Cost: " + format(this.cost()) + " void"},
+            canAfford() { return player.v.points.gte(this.cost()) },
+            buy() {
+                player.v.points = player.v.points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect(x) { let a = new Decimal(x).add(1).pow(4).div(4)
+            return a
+            },
         },
     },
 })
