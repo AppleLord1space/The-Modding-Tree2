@@ -53,6 +53,7 @@ function getPointGen() {
 	if (getBuyableAmount("n",13) > 0) gain = gain.times(buyableEffect("n",13))
 	if (hasUpgrade("n",16)) gain = gain.times(100)
 	if (hasMilestone("v",0)) gain = gain.times(3)
+	gain = gain.times(player.timespeed)
 
 	return gain
 }
@@ -61,7 +62,8 @@ function addedPlayerData() { return {
 	crystalline: new Decimal(0),
 	ngalaxies: new Decimal(0),
 	novacap: "true",
-	replicanticap: new Decimal(0)
+	replicanticap: new Decimal(0),
+	timespeed: new Decimal(1)
 }}
 
 // Display extra things at the top of the page
