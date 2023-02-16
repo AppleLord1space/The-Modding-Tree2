@@ -13,12 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.25",
-	name: "Void 1/2",
+	num: "0.3",
+	name: "Void 2/2",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	
+	<h3>v0.3</h3><br>
+		- Finished the void layer for now, May add more in the future as per usual.	
 	<h3>v0.25</h3><br>
 		- Started off the void layer.
 		<br>
