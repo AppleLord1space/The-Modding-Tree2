@@ -13,16 +13,21 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3",
-	name: "Void 2/2",
+	num: "0.32",
+	name: "Time 1/2-3",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	
+
+	<h3>v0.32</h3><br>
+		- Started off the time layer and god essence.	
+
 	<h3>v0.3</h3><br>
 		- Finished the void layer for now, May add more in the future as per usual.	
+
 	<h3>v0.25</h3><br>
 		- Started off the void layer.
+
 		<br>
 	<h3>v0.2</h3><br>
 		- Finished the Nova layer, may need balancing in the future.`
@@ -55,6 +60,8 @@ function getPointGen() {
 	if (getBuyableAmount("n",13) > 0) gain = gain.times(buyableEffect("n",13))
 	if (hasUpgrade("n",16)) gain = gain.times(100)
 	if (hasMilestone("v",0)) gain = gain.times(3)
+	if (hasMilestone("t",0)) gain = gain.times(2)
+	if (hasMilestone("t",1)) gain = gain.times(2)
 	gain = gain.times(player.timespeed)
 
 	return gain

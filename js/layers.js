@@ -22,7 +22,7 @@ addLayer("n", {
         return mult
     },
     doReset(resettingLayer) {
-        if (resettingLayer != "n" ) { if (hasChallenge("v",12)) {layerDataReset("n",["autonova","milestones"])} }
+        if (resettingLayer != "n" ) { if (hasChallenge("v",12)) {layerDataReset("n",["autonova","milestones"])} else {layerDataReset("n",[])} }
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
@@ -31,6 +31,12 @@ addLayer("n", {
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         {key: "n", description: "N: Collapse your stardust into nova", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "c", description: "C: Collapse your nova into crystalline", onPress(){if (player.n.points.gte(500)) {
+            player.crystalline = player.crystalline.add(player.n.points.sub(499).pow(new Decimal(0.5)))
+            player.n.points = new Decimal(0)
+            player.points = new Decimal(0)
+        }
+        }},
     ],
     layerShown(){return true},
     buyables: {
@@ -400,9 +406,17 @@ addLayer("a", {
         25: {
             name: "Abyssal staredown",
             done() { return hasMilestone("v",4) },
-            tooltip: "Be given a choice.. as of right now there isn't anything beyond this point.",
+            tooltip: "After all these years...",
             unlocked() {return hasAchievement("a",25)},
             image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAADgCAMAAAAt85rTAAAAA1BMVEUAAACnej3aAAAASElEQVR4nO3BMQEAAADCoPVPbQo/oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICXAcTgAAG6EJuyAAAAAElFTkSuQmCC"
+        },
+        31: {
+            name: "It's okay ig..",
+            done() { return hasMilestone("t",3) },
+            tooltip: "Aquire the essence of the gods... There isn't anything after this currently.",
+            unlocked() {return hasAchievement("a",31)},
+            onComplete() {player.g.points = player.g.points.add(1)},
+            image: "data:image/png;base64,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"
         },
     },
 }),
@@ -410,7 +424,7 @@ addLayer("a", {
 
 
 addLayer("v", {
-    branches: ["n","t","l"],
+    branches: ["n","t"],
     startData() { return {                  // startData is a function that returns default data for a layer. 
         unlocked: false,                     // You can add more variables here to add them to your layer.
         points: new Decimal(0), 
@@ -420,7 +434,7 @@ addLayer("v", {
         autogalaxy: false,
     }},
 
-    symbol: "Ͳ",
+    symbol: "ϰ",
     color: "#FFFFFF",                       // The color for this layer, which affects many elements.
     resource: "void",            // The name of this layer's main prestige resource.
     row: 1,                                 // The row this layer is on (0 is the first row).
@@ -446,8 +460,9 @@ addLayer("v", {
                 
         }}},
     ],
-    doReset() {
+    doReset(resettingLayer) {
         player.crystalline = new Decimal(0)
+        if (resettingLayer != "v") {layerDataReset("v",[])}
     },
     layerShown(){return true},
 
@@ -490,16 +505,6 @@ addLayer("v", {
         12: {
             display() {return "gain 1 void"},
             onClick() {player.v.points = player.v.points.add(1)},
-            canClick() {return true},
-        },
-        13: {
-            display() {return "double time speed"},
-            onClick() {player.timespeed = player.timespeed.times(2)},
-            canClick() {return true},
-        },
-        14: {
-            display() {return "10x timespeed"},
-            onClick() {player.timespeed = player.timespeed.times(10)},
             canClick() {return true},
         },
     },
@@ -579,7 +584,7 @@ addLayer("v", {
         },
         4: {
             requirementDescription: "4500000 Void power",
-            effectDescription: "Autobuy stardust accelerators costing nothing and unlock Time and Light.",
+            effectDescription: "Autobuy stardust accelerators costing nothing and unlock Time.",
             done() { return player.v.voidpower.gte(1000000) },
             unlocked() { return hasMilestone("v",3) },
         },
@@ -637,9 +642,6 @@ addLayer("v", {
             challengeDescription: "0.005x time speed",
             canComplete: function() {return player.crystalline.gte(1000)},
             goalDescription: "1000 crystalline",
-            onEnter() {player.timespeed = player.timespeed.times(0.005)},
-            onExit() {player.timespeed = player.timespeed.times(200)},
-            onComplete() {player.timespeed = player.timespeed.times(2)},
             rewardDescription: "2x time speed",
         },
         12: {
@@ -647,9 +649,6 @@ addLayer("v", {
             challengeDescription: "Stardust galaxies are boosted but formation alpha and beta do nothing and 0.01x time speed",
             canComplete: function() {return player.crystalline.gte(10)},
             goalDescription: "10 crystalline",
-            onEnter() {player.timespeed = player.timespeed.times(0.01)},
-            onExit() {player.timespeed = player.timespeed.times(100)},
-            onComplete() {player.timespeed = player.timespeed.times(1.3)},
             rewardDescription: "1.3x time speed, and keep nova milestones on reset.",
             unlocked() {return (hasChallenge("v",11))}
         },
@@ -664,7 +663,16 @@ addLayer("t", {
         time: new Decimal(0),
     }},
 
-    symbol: "Ξ",
+    gettimespeed() {
+        player.timespeed = new Decimal(1)
+        if (hasChallenge("v",11)) {player.timespeed = player.timespeed.times(2)}
+        if (hasChallenge("v",12)) {player.timespeed = player.timespeed.times(1.3)}
+        if (inChallenge("v",11)) {player.timespeed = player.timespeed.times(0.005)}
+        if (inChallenge("v",12)) {player.timespeed = player.timespeed.times(0.01)}
+        if (player.t.time.gte(1)) {player.timespeed = player.timespeed.times(player.t.time.add(1).log(10).add(1).pow(2))}
+    },
+
+    symbol: "Ͳ",
     color: "#4BDC13",                       // The color for this layer, which affects many elements.
     resource: "time generators",            // The name of this layer's main prestige resource.
     row: 2,                                 // The row this layer is on (0 is the first row).
@@ -685,48 +693,265 @@ addLayer("t", {
         return new Decimal(1)
     },
 
+    hotkeys: [
+        {key: "t", description: "T: Trade your void for time generators", onPress(){if (canReset(this.layer)) {
+            doReset(this.layer)
+                
+        }}},
+    ],
+
+    tabFormat: {
+        "Time": {
+            content: [
+                "main-display",
+                ["display-text",
+                    function() { return 'You have ' + format(player.t.time) + ' time, dissipating at a rate of 0.1%/frame, which is boosting time speed by ' + format(player.t.time.add(1).log(10).add(1).pow(2)) + "x" },
+                    { "color": "lime", "font-size": "12px", "font-family": "Comic Sans MS" }],
+                "blank",
+                "prestige-button",
+                "blank",
+                "milestones",
+                
+            ],
+        },
+    },
+
     layerShown() { if (hasMilestone("v",4)) {return true} else {if (player.t.best.gte(1)) {return true} else {return false}} },          // Returns a bool for if this layer's node should be visible in the tree.
     timestuff() {
+        let gain = player.t.points
+        if (hasMilestone("t",2)) {gain = gain.times(2)}
 
-    player.t.time = player.t.time.add(player.t.points.div(30))
+        player.t.time = player.t.time.add(gain)
+        player.t.time = player.t.time.times(0.999)
 
+    },
+    clickables: {
+        11: {
+            display() {return "Obliterate all time generators (YOU DO NOT GAIN ANYTHING, THIS ACTION IS NOT REVERSABLE)"},
+            onClick() {player.t.points = new Decimal(0)},
+            canClick() {return true},
+        },
+        12: {
+            display() {return "gain 1 time generator"},
+            onClick() {player.t.points = player.t.points.add(1)},
+            canClick() {return true},
+        },
+    },
+    milestones: {
+        0: {
+            requirementDescription: "1 Time generator",
+            effectDescription: "2x Stardust gain.",
+            done() { return player.t.points.gte(1) }
+        },
+        1: {
+            requirementDescription: "2 Time generators",
+            effectDescription: "2x Stardust gain",
+            done() { return player.t.points.gte(2) },
+            unlocked() {return hasMilestone("t",0)}
+        },
+        2: {
+            requirementDescription: "3 Time generators",
+            effectDescription: "2x Time generation",
+            done() { return player.t.points.gte(3) },
+            unlocked() {return hasMilestone("t",1)}
+        },
+        3: {
+            requirementDescription: "4 Time generators",
+            effectDescription: "Unlock god essence",
+            done() { return player.t.points.gte(4) },
+            unlocked() {return hasMilestone("t",2)}
+        },
     },
     upgrades: {
         // Look in the upgrades docs to see what goes here!
     },
 }),
 
-addLayer("l", {
-    startData() { return {                  // startData is a function that returns default data for a layer. 
-        unlocked: true,                     // You can add more variables here to add them to your layer.
-        points: new Decimal(0),             // "points" is the internal name for the main resource of the layer.
-        best: new Decimal(0),
+
+
+addLayer("g", {
+    branches: [],
+    name: "god essence", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "☀", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
     }},
-
-    symbol: "ϟ",
-    color: "#fff370",                       // The color for this layer, which affects many elements.
-    resource: "light",            // The name of this layer's main prestige resource.
-    row: 2,                                 // The row this layer is on (0 is the first row).
-
-    baseResource: "void",                 // The name of the resource your prestige gain is based on.
-    baseAmount() { return player.v.points },  // A function to return the current amount of baseResource.
-
-    requires: new Decimal(25),              // The amount of the base needed to  gain 1 of the prestige currency.
-                                            // Also the amount required to unlock the layer.
-
-    type: "normal",                         // Determines the formula used for calculating prestige currency.
-    exponent: 0.5,                          // "normal" prestige gain is (currency^exponent).
-
-    gainMult() {                            // Returns your multiplier to your gain of the prestige resource.
-        return new Decimal(1)               // Factor in any bonuses multiplying gain here.
+    tooltip: "God essence",
+    color: "#fc7f03",
+    requires: new Decimal(Infinity), // Can be a function that takes requirement increases into account
+    resource: "god essence", // Name of prestige currency
+    baseResource: "stardust", // Name of resource prestige is based on
+    baseAmount() {return new Decimal(0)}, // Get the current amount of baseResource
+    type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        return mult
     },
-    gainExp() {                             // Returns the exponent to your gain of the prestige resource.
-        return new Decimal(1)
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        return exp
     },
-
-    layerShown() { if (hasMilestone("v",4)) {return true} else {if (player.l.best.gte(1)) {return true} else {return false}} },          // Returns a bool for if this layer's node should be visible in the tree.
-
-    upgrades: {
-        // Look in the upgrades docs to see what goes here!
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+    layerShown(){return true},
+    tabFormat: {
+        "God perks": {
+            content: [
+                "main-display",
+                ["buyables",[1]],
+                ["buyables",[2]],
+                ["buyables",[3]],
+            ],
+        },
     },
+    buyables: {
+        11: {
+            cost() { return new Decimal(1) },
+            display() { return "Alpha enrichment<br>Increases formation alpha's effect by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)).pow(getBuyableAmount(this.layer, this.id).add(1)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        12: {
+            cost() { return new Decimal(1) },
+            display() { return "Beta enrichment<br>Increases formation beta's effect by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)).pow(getBuyableAmount(this.layer, this.id).add(1)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        13: {
+            cost() { return new Decimal(1) },
+            display() { return "Nova drive<br>Increases nova gain by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)).pow(getBuyableAmount(this.layer, this.id).add(1)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        21: {
+            cost() { return new Decimal(1) },
+            display() { return "Crystalline replicator<br>Increases crystalline gain by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        22: {
+            cost() { return new Decimal(1) },
+            display() { return "Universal collapse<br>Increases the effect of stardust galaxies by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)).pow(getBuyableAmount(this.layer, this.id).add(1)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        23: {
+            cost() { return new Decimal(1) },
+            display() { return "Void warper<br>Increases void power gain by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        31: {
+            cost() { return new Decimal(1) },
+            display() { return "Oblivion<br>Increases decay gain by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        32: {
+            cost() { return new Decimal(1) },
+            display() { return "Leaded gasoline<br>Increases the effect void generator by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+        33: {
+            cost() { return new Decimal(1) },
+            display() { return "Time warper<br>Increases time speed by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id).times(0.1)) },
+            sellOne() {
+                if (getBuyableAmount(this.layer, this.id).gte(1)) {
+                player.g.points = player.g.points.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(-1))
+            }
+            }
+        },
+    },
+    resetsNothing: true,
+    layerShown() {return hasAchievement("a",31)}
 })
