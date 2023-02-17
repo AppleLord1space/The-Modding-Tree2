@@ -17,12 +17,13 @@ addLayer("n", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-        if (hasUpgrade("n",11)) mult = mult.times(new Decimal(Math.log(player.points.add(1))).add(1))
-        if (hasUpgrade("n",13)) mult = mult.times(new Decimal(2))
+        if (hasUpgrade("n",11)) mult = mult.mul(new Decimal(Math.log(player.points.add(1))).add(1))
+        if (hasUpgrade("n",13)) mult = mult.mul(new Decimal(2))
+        if (getBuyableAmount("g",13).gte(1)) mult = mult.mul(buyableEffect("g",13))
         return mult
     },
     doReset(resettingLayer) {
-        if (resettingLayer != "n" ) { if (hasChallenge("v",12)) {layerDataReset("n",["autonova","milestones"])} else {layerDataReset("n",[])} }
+        if (resettingLayer != "n" ) { if (hasChallenge("v",12)) {layerDataReset("n",["autonova","milestones"])} else {if (resettingLayer = "t") {if (hasMilestone("t",8)) {layerDataReset("n",["autonova","milestones"])} else {layerDataReset("n",[])}} else {layerDataReset("n",[])}} }
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
@@ -53,7 +54,8 @@ addLayer("n", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) { let a = new Decimal(x).pow(2).add(1) 
-            if (hasAchievement("a",12)) a = a.times(new Decimal(4))
+            if (hasAchievement("a",12)) a = a.mul(new Decimal(4))
+            if (getBuyableAmount("g",11).gte(1)) a = a.mul(buyableEffect("g",11))
             if (inChallenge("v",12)) {a = new Decimal(1)}
             return a
             },
@@ -68,7 +70,8 @@ addLayer("n", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) { let a = new Decimal(x).pow(2).add(1) 
-                if (player.v.voidpower.gte(1)) {if (a.gte(2)) { a = a.times(player.v.voidpower.add(1).pow(0.5)) }}
+                if (player.v.voidpower.gte(1)) {if (a.gte(2)) { a = a.mul(player.v.voidpower.add(1).pow(0.5)) }}
+                if (getBuyableAmount("g",12).gte(1)) a = a.mul(buyableEffect("g",12))
                 if (inChallenge("v",11)) {a = new Decimal(1)}
                 if (inChallenge("v",12)) {a = new Decimal(1)}
             return a
@@ -84,14 +87,15 @@ addLayer("n", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) { let a = new Decimal(x).pow(1.1)
-                if (getBuyableAmount("n",14) > 0) a = a.times(buyableEffect("n",14))
-                if (getBuyableAmount("v",21).gte(1)) a = a.times(buyableEffect("v",21))
-                if (inChallenge("v",12)) {a = a.times(5)}
+                if (getBuyableAmount("n",14) > 0) a = a.mul(buyableEffect("n",14))
+                if (getBuyableAmount("v",21).gte(1)) a = a.mul(buyableEffect("v",21))
+                if (inChallenge("v",12)) {a = a.mul(5)}
+                if (getBuyableAmount("g",22).gte(1)) a = a.mul(buyableEffect("g",22))
             return a
             },
         },
         14: {
-            cost(x) { return new Decimal(1000000).times(new Decimal(100).pow(x)) },
+            cost(x) { return new Decimal(1000000).mul(new Decimal(100).pow(x)) },
             title() { return "Stardust accelerator" },
             display() { return "Multiplies stardust galaxies effectiveness by " + format(buyableEffect("n",14)) + "x<br>Cost: " + format(this.cost()) + " stardust<br>Amount: " + format(getBuyableAmount("n",14))},
             canAfford() { return player.points.gte(this.cost()) },
@@ -123,9 +127,18 @@ addLayer("n", {
         if (player.v.autogalaxy) { if (player.points.gte(new Decimal(10).pow(new Decimal(getBuyableAmount("n",13)).sub(buyableEffect("n",15))))) {addBuyables("n",13,new Decimal(1))} }
         if (player.v.autoformation) { if (player.n.points.gte(getBuyableAmount("n",11).pow(3).add(1).div(buyableEffect("n",12).add(1)))) {addBuyables("n",11,new Decimal(1))} }
         if (player.v.autoformation) { if (getBuyableAmount("n",11).gte(getBuyableAmount("n",12).pow(4).add(7))) {addBuyables("n",12,new Decimal(1))} }
+        if (hasMilestone("v",4)) { if (player.points.gte(new Decimal(1000000).mul(new Decimal(100).pow(getBuyableAmount("n",14))))) {addBuyables("n",14,new Decimal(1))} }
+        if (hasMilestone("t",4)) { if (player.n.points.gte(new Decimal(500))) { if (hasMilestone("v",0)) {
+            let get = player.n.points.sub(499).pow(new Decimal(0.5))
+            if (getBuyableAmount("g",21).gte(1)) get = get.mul(buyableEffect("g",21))
+            if (hasMilestone("t",5)) {get = get.mul(2)}
+            player.crystalline = player.crystalline.add(get.mul(0.03))
+        }}}
+        
         
 
     },
+
     collapse(){
         if (!hasMilestone("v",0)) {
             if (novacap = "true") {
@@ -194,6 +207,8 @@ addLayer("n", {
     },
     
     passiveGeneration() {if (player[this.layer].autonova == true) {return 0.2} else {return 0}},
+
+    autoUpgrade: function() {return format(hasMilestone("t",5))},
 
     upgrades: {
         11: {
@@ -284,7 +299,9 @@ addLayer("n", {
         21: {
             display() {return "Collapse for " + format(player.n.points.sub(499).pow(new Decimal(0.5))) + " crystalline"},
             onClick() {
-                player.crystalline = player.crystalline.add(player.n.points.sub(499).pow(new Decimal(0.5)))
+                let get = player.n.points.sub(499).pow(new Decimal(0.5))
+                if (getBuyableAmount("g",21).gte(1)) get = get.mul(buyableEffect("g",21))
+                player.crystalline = player.crystalline.add(get)
                 player.n.points = new Decimal(0)
                 player.points = new Decimal(0)
             
@@ -413,8 +430,16 @@ addLayer("a", {
         31: {
             name: "It's okay ig..",
             done() { return hasMilestone("t",3) },
-            tooltip: "Aquire the essence of the gods... There isn't anything after this currently.",
+            tooltip: "Aquire the essence of the gods.",
             unlocked() {return hasAchievement("a",31)},
+            onComplete() {player.g.points = player.g.points.add(1)},
+            image: "data:image/png;base64,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"
+        },
+        32: {
+            name: "Yeah I have time.",
+            done() { return player.t.points.gte(10) },
+            tooltip: "Aquire 10 time generators<br>Reward: Automate void buyables costing nothing and get another god essence",
+            unlocked() {return hasAchievement("a",32)},
             onComplete() {player.g.points = player.g.points.add(1)},
             image: "data:image/png;base64,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"
         },
@@ -462,7 +487,7 @@ addLayer("v", {
     ],
     doReset(resettingLayer) {
         player.crystalline = new Decimal(0)
-        if (resettingLayer != "v") {layerDataReset("v",[])}
+        if (resettingLayer != "v") {if (hasMilestone("t",5)) {if (resettingLayer = "t") {if (hasMilestone("t",8)) {layerDataReset("v",["upgrades","milestones","autoformation","autogalaxy"])} else {layerDataReset("v",[])}} else {layerDataReset("v",["milestones","autoformation","autogalaxy"])}} else {layerDataReset("v",[])}}
     },
     layerShown(){return true},
 
@@ -507,7 +532,13 @@ addLayer("v", {
             onClick() {player.v.points = player.v.points.add(1)},
             canClick() {return true},
         },
+        13: {
+            display() {return "obliterate void generators"},
+            onClick() {setBuyableAmount("v",11,new Decimal(0))},
+            canClick() {return true},
+        },
     },
+    autoUpgrade: function() {return format(hasMilestone("t",8))},
     tabFormat: {
         "Void": {
             content: [
@@ -523,6 +554,7 @@ addLayer("v", {
                 ["buyables",["1"]],
                 ["buyables",["2"]],
                 ["upgrades",["1"]],
+                ["clickable",["13"]],
                 
             ],
         },
@@ -540,21 +572,34 @@ addLayer("v", {
     voidpowerstuff() {
         let get = new Decimal(buyableEffect("v",11))
         if (getBuyableAmount("v",22).gte(1)) {get = get.add(buyableEffect("v",22))}
-        if (hasUpgrade("v",11)) {get = get.times(3)}
-        if (hasUpgrade("v",12)) {get = get.times(2)}
-        if (hasMilestone("v",2)) {get = get.times(2)}
-        if (hasUpgrade("v",13)) {get = get.times(player.v.decaypoints.add(1).pow(0.5))}
-        if (getBuyableAmount("v",11).gte(1)) {player.v.voidpower = player.v.voidpower.add(get.times(player.timespeed))}
-        player.v.voidpower = player.v.voidpower.times(0.98)
+        if (hasUpgrade("v",11)) {get = get.mul(3)}
+        if (hasUpgrade("v",12)) {get = get.mul(2)}
+        if (hasMilestone("v",2)) {get = get.mul(2)}
+        if (hasUpgrade("v",13)) {get = get.mul(player.v.decaypoints.add(1).pow(0.5))}
+        if (getBuyableAmount("g",23).gte(1)) get = get.mul(buyableEffect("g",23))
+        if (getBuyableAmount("v",11).gte(1)) {player.v.voidpower = player.v.voidpower.add(get.mul(player.timespeed))}
+        player.v.voidpower = player.v.voidpower.mul(0.98)
 
         if (hasUpgrade("v",13)) {
         let get = new Decimal(1)
         
         
-
-        player.v.decaypoints = player.v.decaypoints.add(get.times(player.timespeed))
-        player.v.decaypoints = player.v.decaypoints.times(0.9)
+        if (getBuyableAmount("g",31).gte(1)) get = get.mul(buyableEffect("g",31))
+        player.v.decaypoints = player.v.decaypoints.add(get.mul(player.timespeed))
+        player.v.decaypoints = player.v.decaypoints.mul(0.9)
         }
+    },
+    automate() {
+        if (hasMilestone("t",7)) {
+            if (hasUpgrade("v",13)) {player[this.layer].challenges[11] = new Decimal(1)}
+            if (hasChallenge("v",11)) {player[this.layer].challenges[12] = new Decimal(1)}
+
+        }
+        if (hasAchievement("a",32)) { if (player.v.voidpower.gte(getBuyableAmount("v",21).add(1).pow(5).add(499))) {addBuyables("v",21,new Decimal(1))} }
+        if (hasAchievement("a",32)) { if (player.v.voidpower.gte(getBuyableAmount("v",22).add(1).pow(10).add(499).mul(0.1))) {addBuyables("v",22,new Decimal(1))} }
+        if (hasAchievement("a",32)) { if (player.v.points.gte(getBuyableAmount("v",11).add(1).pow(2).mul(0.5))) {addBuyables("v",11,new Decimal(1))} }
+
+
     },
     milestones: {
         0: {
@@ -592,7 +637,7 @@ addLayer("v", {
     buyables: {
         11: {
             cost(x) { let a =  new Decimal(x).add(1).pow(2) 
-            if (hasMilestone("v",1)) {a = a.times(0.5)}
+            if (hasMilestone("v",1)) {a = a.mul(0.5)}
             return a
             },
             title() { return "Void engine" },
@@ -603,6 +648,7 @@ addLayer("v", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) { let a = new Decimal(x).add(1).pow(4).div(4)
+                if (getBuyableAmount("g",32).gte(1)) a = a.mul(buyableEffect("g",32))
             return a
             },
         },
@@ -621,7 +667,7 @@ addLayer("v", {
         },
         22: {
             cost(x) { let a = new Decimal(x).add(1).pow(10).add(499)
-            if (hasMilestone("v",1)) {a = a.times(0.1)}
+            if (hasMilestone("v",1)) {a = a.mul(0.1)}
             return a
             },
             title() { return "Void enhancer" },
@@ -665,11 +711,12 @@ addLayer("t", {
 
     gettimespeed() {
         player.timespeed = new Decimal(1)
-        if (hasChallenge("v",11)) {player.timespeed = player.timespeed.times(2)}
-        if (hasChallenge("v",12)) {player.timespeed = player.timespeed.times(1.3)}
-        if (inChallenge("v",11)) {player.timespeed = player.timespeed.times(0.005)}
-        if (inChallenge("v",12)) {player.timespeed = player.timespeed.times(0.01)}
-        if (player.t.time.gte(1)) {player.timespeed = player.timespeed.times(player.t.time.add(1).log(10).add(1).pow(2))}
+        if (hasChallenge("v",11)) {player.timespeed = player.timespeed.mul(2)}
+        if (hasChallenge("v",12)) {player.timespeed = player.timespeed.mul(1.3)}
+        if (inChallenge("v",11)) {player.timespeed = player.timespeed.mul(0.005)}
+        if (inChallenge("v",12)) {player.timespeed = player.timespeed.mul(0.01)}
+        if (getBuyableAmount("g",33).gte(1)) player.timespeed = player.timespeed.mul(buyableEffect("g",33))
+        if (player.t.time.gte(1)) {player.timespeed = player.timespeed.mul(player.t.time.add(1).log(10).add(1).pow(2))}
     },
 
     symbol: "Ͳ",
@@ -719,10 +766,10 @@ addLayer("t", {
     layerShown() { if (hasMilestone("v",4)) {return true} else {if (player.t.best.gte(1)) {return true} else {return false}} },          // Returns a bool for if this layer's node should be visible in the tree.
     timestuff() {
         let gain = player.t.points
-        if (hasMilestone("t",2)) {gain = gain.times(2)}
+        if (hasMilestone("t",2)) {gain = gain.mul(2)}
 
         player.t.time = player.t.time.add(gain)
-        player.t.time = player.t.time.times(0.999)
+        player.t.time = player.t.time.mul(0.999)
 
     },
     clickables: {
@@ -760,6 +807,36 @@ addLayer("t", {
             effectDescription: "Unlock god essence",
             done() { return player.t.points.gte(4) },
             unlocked() {return hasMilestone("t",2)}
+        },
+        4: {
+            requirementDescription: "5 Time generators",
+            effectDescription: "Gain 100% of crystalline gain on reset per second",
+            done() { return player.t.points.gte(5) },
+            unlocked() {return hasMilestone("t",3)}
+        },
+        5: {
+            requirementDescription: "6 Time generators",
+            effectDescription: "Autobuy nova upgrades and double auto crystalline gain.",
+            done() { return player.t.points.gte(6) },
+            unlocked() {return hasMilestone("t",4)}
+        },
+        6: {
+            requirementDescription: "7 Time generators",
+            effectDescription: "Keep void milestones on reset.",
+            done() { return player.t.points.gte(7) },
+            unlocked() {return hasMilestone("t",5)}
+        },
+        7: {
+            requirementDescription: "9 Time generators",
+            effectDescription: "You complete void challenges upon unlocking them.",
+            done() { return player.t.points.gte(9) },
+            unlocked() {return hasMilestone("t",6)}
+        },
+        8: {
+            requirementDescription: "12 Time generators",
+            effectDescription: "Keep nova milestones and void upgrades on time generator resets.",
+            done() { return player.t.points.gte(12) },
+            unlocked() {return hasMilestone("t",7)}
         },
     },
     upgrades: {
@@ -921,7 +998,7 @@ addLayer("g", {
         },
         32: {
             cost() { return new Decimal(1) },
-            display() { return "Leaded gasoline<br>Increases the effect void generator by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
+            display() { return "Leaded gasoline<br>Increases the effect of void generators by " + format(this.effect(x)) + "x<br>Amount: " + format(getBuyableAmount(this.layer, this.id)) },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -943,7 +1020,7 @@ addLayer("g", {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
-            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id).times(0.1)) },
+            effect() { return new Decimal(1).add(getBuyableAmount(this.layer, this.id).mul(0.1)) },
             sellOne() {
                 if (getBuyableAmount(this.layer, this.id).gte(1)) {
                 player.g.points = player.g.points.add(1)

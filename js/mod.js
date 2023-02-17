@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.32",
-	name: "Time 1/2-3",
+	num: "0.35",
+	name: "Time 2/3",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+
+	<h3>v0.35</h3><br>
+		- Did some more stuff with the time layer, there are now 12 achievements.	
 
 	<h3>v0.32</h3><br>
 		- Started off the time layer and god essence.	
